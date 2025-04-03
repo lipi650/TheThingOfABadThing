@@ -32,3 +32,12 @@ The project is not completed yet, it is in a WIP state.
   - Create a map. You can use the MAPEDIT tool for it, but the first version only contains one wall variation (value 1) so it needs to be updated or completely replaced for a more sophisticated editor.
   - Since at the current stage only wall data is stored, we need to add an other array to contain the cell values (for example add a value of "S" to indicate if something special happens on that cell).
   - Create the dialogs / story / quests in the main loop of the program using BASIC.
+
+## Plans for the future:
+  - Adding a start screen
+  - It would be nice to change the monochrome character mode to NCM (nibble colour mode) to have more colours once I learn how to do it, but at the moment the main priority is to complete the engine to have something playable.
+  - Adding a simple combat system. I don't want something D&D level, I would make something similar to the Fighting-Fantasy system.
+  - NPC-s / shops and other special locations
+  - Moving between different MAPs.
+  - Load / Save functions
+  
