@@ -12,7 +12,7 @@ The project is not completed yet, it is in a WIP state.
 
 ## The tools:
   ### IFFTOTILE:
-  This tool allows to convert the graphics of the walls from an IFF file to character data and copies it to the Attic RAM from where it can be saved to disk for the main program to reach.
+  This tool allows to convert the graphics of the walls from an IFF file to character data in a specific order, and copies it to the Attic RAM from where it can be saved to disk for the main program to reach.
   ### IFFTOBGND:
   It is a variation of the IFFTOTILE but only saves a smaller segment (144 characters) of an IFF file which can be used as a background (ground and sky for example).
   ### MAPEDIT:
