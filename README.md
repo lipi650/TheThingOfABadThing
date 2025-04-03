@@ -31,7 +31,7 @@ The project is not completed yet, it is in a WIP state.
       --FR0,1-----FR1,1---
 
 ## How to make a game with it?
-  - Draw some wall graphics and import them with the IFFTOTILE tool to different Attic RAM "slots". Save these slots to disk (There is a line at the end of the program REM-ed out for this, saves all the slots in one file).
+  - Draw some wall graphics and import them with the IFFTOTILE tool to different Attic RAM "slots". Save these slots to disk (There is a line at the end of the program REM-ed out for this, saves all the slots in one file: uncomment and execute this line directly after you have imported sevaral pictures to the desired slots).
   - Draw a background (sky and ground of the level) and import and save it with IFFTOBGND.
   - Create a map. You can use the MAPEDIT tool for it, but the first version only contains one wall variation (value 1) so it needs to be updated or completely replaced for a more sophisticated editor.
   - Since at the current stage only wall data is stored, we need to add an other array to contain the cell values (for example add a value of "S" to indicate if something special happens on that cell).
