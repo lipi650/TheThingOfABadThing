@@ -1,6 +1,6 @@
 # TheThingOfABadThing
 Pseudo-3D game engine and tools to create games in BASIC65 on the Mega65 computer.
-The writer of this work is not a skilled coder; so, any ideas you have to improve this software would be appreciated.
+The writer of this work is not a skilled coder; so, any ideas to improve this software would be appreciated.
 
 This project aims to provide an "engine" and some tools to create 3D-looking role playing games (similar to the Bard's Tale series for example) in BASIC 65.
 The project is not completed yet, it is in a WIP state.
