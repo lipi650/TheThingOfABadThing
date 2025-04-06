@@ -16,8 +16,8 @@ The project is not completed yet, it is in a WIP state.
   This tool allows to convert the graphics of the walls from an IFF file to character data in a specific order, and copies it to the Attic RAM from where it can be saved to disk for the main program to reach.
   ### IFFTOBGND:
   It is a variation of the IFFTOTILE but only saves a smaller segment (144 characters) of an IFF file which can be used as a background (ground and sky for example).
-  ### MAPEDIT:
-  This is a minimalistic makeshift tool to create and save a very simple map. RUN draws the boundaries where you can place W characters for walls. RUN 55 will check the values on the screen, creates FRONTS and SIDES information from them, and save them in a MAP file.
+  ### NEWMAPEDIT:
+  This is the new, improved version of the mapeditor tool.
 
 ## The MAP:
   The map file contains the grid data of 20x20 Front and Side values (walls facing to the player and walls facing to the right) in the following order: (FR1,1, SI1,1, FR1,2, SI,2, FR1,3....SI20,1, FR2,1, SI2,1, FR3,1...)
