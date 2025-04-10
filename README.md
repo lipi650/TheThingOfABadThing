@@ -6,6 +6,8 @@ The writer of this work is not a skilled coder; so, any ideas to improve this so
 This project aims to provide an "engine" and some tools to create 3D-looking role playing games (similar to the Bard's Tale series for example) in BASIC 65.
 The project is not completed yet, it is in a WIP state.
 
+![Camp](screenshots/camp.png)
+
 ## The engine (first version):
   The player can see the environment in a 12x12 "3D"-like first-person view, which is displayed using custom character graphics (144 characters which's values are copied from the Attic RAM when modified).
   The player can roam in a 20x20 map.
