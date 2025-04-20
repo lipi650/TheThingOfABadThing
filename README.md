@@ -43,7 +43,6 @@ The project is not completed yet, it is in a WIP state.
    - More wall types: Wall with door, trees, city walls, dungeon walls etc.
   - Adding a start screen graphics
   - It would be nice to change the monochrome character mode to NCM (nibble colour mode) to have more colours once I learn how to do it, but at the moment the main priority is to complete the engine to have something playable.
-  - Adding a simple combat system. I don't want something D&D level, I would make something similar to the Fighting-Fantasy system with attributes attack, defense, strength.
   - NPC-s / shops and other special locations
   - Moving between different MAPs.
   - Load / Save functions
