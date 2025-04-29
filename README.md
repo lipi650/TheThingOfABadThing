@@ -35,13 +35,13 @@ The project is not completed yet, it is in a WIP state.
 ## How to make a game with it?
   - Draw some wall graphics and import them with the IFFTOTILE tool to different Attic RAM "slots". Save these slots to disk (There is a line at the end of the program REM-ed out for this, saves all the slots in one file: uncomment and execute this line directly after you have imported sevaral pictures to the desired slots).
   - Draw a background (sky and ground of the level) and import and save it with IFFTOBGND.
-  - Create a map. You can use the MAPEDIT tool for it, but the first version only contains one wall variation (value 1) so it needs to be updated or completely replaced for a more sophisticated editor.
-  - Since at the current stage only wall data is stored, we need to add an other array to contain the cell values (for example add a value of "S" to indicate if something special happens on that cell).
+  - Create a map. You can use the MAPEDIT tool for it, but the current version only contains a few wall variations so it could be updated with more.
+  - There is an other array which indicates if a cell is "Special": if the main program detects that the actual cell is "Special" it forks to evaulate and process it.
   - Create the dialogs / story / quests in the main loop of the program using BASIC.
 
 ## Plans for the future:
-   - More wall types: Wall with door, trees, city walls, dungeon walls etc.
-  - Adding a start screen graphics
+  - More wall types: city walls, dungeon walls etc.
+  - Adding a start screen graphics (in progress)
   - It would be nice to change the monochrome character mode to NCM (nibble colour mode) to have more colours once I learn how to do it, but at the moment the main priority is to complete the engine to have something playable.
   - NPC-s / shops and other special locations
   - Moving between different MAPs.
