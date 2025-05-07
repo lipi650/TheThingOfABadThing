@@ -1,0 +1,17 @@
+   10 screen 0,320,200,1
+   20 screen 1,320,200,1
+   30 screen set 0,0
+   40 loadiff"moboar.iff"
+   50 for x=0to319
+   60 for y=0to199
+   65 screen set 0,0
+   70 p=pixel(x,y)
+   80 if p=0 then pen1
+   90 if p=1 then pen0
+   95 screen set 1,1
+   97 dot x,y
+   98 nexty,x
+   99 saveiff"@moboari.iff"
+  100 getkey a$
+  110 screen close 1
+  120 screen close 0

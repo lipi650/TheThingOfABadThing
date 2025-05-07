@@ -1,0 +1,47 @@
+   10 mem 1,3
+   12 for q=1to3:read sl&,f$
+   15 by=0
+   20 ad=$51000
+  100 screen 0,320,200,1
+  110 loadiff(f$)
+  112 rem dopen #5,"walls3",w
+  120 rem ------read one row of pixels-----
+  200 rem -read character locations from data----
+  210 for cx=0to11
+  215 for cy=0to11
+  225 x=cx*8+7: y=cy*8
+  230 gosub 2000
+  240 next cy
+  245 next cx
+  250 print chr$(7)
+  260 goto 700
+  265 rem--------delete the parts below that we don't need--------
+  650 sleep 1:  print chr$(7)
+  700 rem --copy to attic ram--
+  710 d=$802ff80+sl&*$480:rem destination address in attic ram
+  720 edma 0,1152,$51000,d :print"i have copied them into attic ram."
+  980 screen close 0
+  985 printsl& d ad
+  990 rem dclose#5
+  995 nextq
+  996 goto3080
+ 1000 end
+ 1999 rem ----------------------------------------
+ 2000 rem -read one char-
+ 2005 for r=0to7: rem read 8 rows
+ 2010 for p=0to7
+ 2020 b=b+pixel(x-p,y+r)*2^p
+ 2030 next p
+ 2040 poke ad,b :ad=ad+1
+ 2041 rem print#5,chr$(b);
+ 2042 b=0
+ 2045 next r
+ 2050 return
+ 2500 rem---data---
+ 2501 data1,"mo-boar.iff"
+ 2502 data2,"mogoblin.iff"
+ 2503 data3,"mowolf.iff"
+ 3060 rem ---total bytes: 1152/monster--
+ 3070 rem 64 wallls bsave "64wallsatt", p($8000810)to p($8020400)
+ 3080 bsave "@mons01", p($8030400)to p($8034c00)
+ 3090 print"saved the content from attic ram into file."

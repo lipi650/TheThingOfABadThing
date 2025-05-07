@@ -1,0 +1,46 @@
+   10 scnclr: print"draw on the screen with the keyboard then press f1 to save the screen"
+   20 print"f3 to quit"
+   30 print"{down}{down}press any key to continue"
+   40 getkey a$: print chr$(27)+"4"
+   50 scnclr
+   60 rem initialize
+   70 x=2: y=2 :sa=$640
+   75 sprite 1,1,1,1,0,0,0
+   80 for i=0to62
+   85 read s%
+   90 poke sa+i,s%
+   95 next i
+  100 movspr 1,2 +x*8,42+y*8
+  105 getkey a$
+  108 if a$=chr$(13) then 300
+  110 if a$=chr$(29) then x=mod(x,19)+1
+  115 if a$=chr$(17) then y=mod(y,24)+1
+  120 if a$=chr$(157) then x=mod(x-2,19)+1
+  125 if a$=chr$(145) then y=mod(y-2,24)+1
+  130 c= asc(a$)
+  140 if c>=32 and c<=126 then t@&(x,y)=c
+  200 goto 100
+  300 printchr$(27)+"8": sprite 1,0,0,0,0,0,0
+  305 end
+ 1000 rem sprite data
+ 1001 data 0,62,0
+ 1002 data 0,65,0
+ 1003 data 0,65,0
+ 1004 data 0,65,0
+ 1005 data 0,65,0
+ 1006 data 0,65,0
+ 1007 data 0,65,0
+ 1008 data 0,65,0
+ 1009 data 0,65,0
+ 1010 data 0,62,0
+ 1011 data 0,0,0
+ 1012 data 0,0,0
+ 1013 data 0,0,0
+ 1014 data 0,0,0
+ 1015 data 0,0,0
+ 1016 data 0,0,0
+ 1017 data 0,0,0
+ 1018 data 0,0,0
+ 1019 data 0,0,0
+ 1020 data 0,0,0
+ 1021 data 0,0,0
