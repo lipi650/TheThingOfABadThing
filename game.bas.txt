@@ -10,6 +10,7 @@
   100 rem battle
   110 rem --------------------
   120 rem initialization
+  122 gosub 20000:rem init music
   125 mem 1,3: graphic clr: rem reserve screen memory for charset
   126 n$="10.chr": d8=peek($d068): d9=peek($d069): da=peek($d06a)
   127 poke $d068,$00:poke $d069,$10:poke $d06a,$05
@@ -29,6 +30,7 @@
   520 screen set 0,1
   530 rem load graphics
   540 loadiff"titlescreen.iff"
+  541 gosub 20540:rem start playing music
   542 screen set 0,0:sleep 1:loadiff"titletext.iff"
   543 pen 8
   545 rem char 7,8,2,1,2,"The Thing of a Bad Thing"
@@ -42,7 +44,7 @@
   570 rem
   599 rem start screen options
   600 char 12,192,1,1,2,"Press any key"
-  680 getkey a$
+  680 gosub 20700:rem getkey + poll music
   699 rem load grid--------------------------
   700 screen close 1:screen close 0 :scnclr:print"{wht}"
   705 if rwindow(2)=80 then print chr$(27)+"x": rem switch to 40 columns
@@ -70,10 +72,9 @@
  1005 gosub 6000:rem print player stats
  1010 gosub 5110: rem check special cells
  1020 if int(rnd(0)*100)+1<wm% then gosub 7800:rem wandering monster
- 1025 ifst%<1 then getkeya$:goto 9000
+ 1025 ifst%<1 then gosub 20700:goto 9000
  1030 ifml%>0thengosub8200:rem combat
- 1500 get a$
- 1505 if a$="" then 1500
+ 1500 gosub 20700
  1510 if a$=chr$(145) and(vf&(11)<9 and vf&(11)<>0) then 1560
  1520 if a$=chr$(145) and di=1 then py=py-1
  1530 if a$=chr$(145) and di=3 then py=py+1
@@ -94,7 +95,7 @@
  2000 window2,16,37,23
  2001 print "{wht}"
  2002 cursor0,7:print "do you want to leave the game?"
- 2003 getkey a$
+ 2003 gosub 20700
  2004 ifa$<>"y"thenscnclr:window17,3,37,14:return
  2005 print chr$(27)+"x" :rem switch back to 80 columns
  2006 poke $d068,d8:poke $d069,d9:poke $d06a,da
@@ -301,7 +302,7 @@
  5100 rem ------evaluate the special cells------
  5110 window 2,16,37,23:cursor 0,7
  5111 if sp&(px,py)=0 then scnclr: goto 5998 :rem not special, clear window
- 5112 play "3ged"
+ 5112 rem play "3ged": can be replaced with a 'sound' command effect later
  5113 if mp$="map01"and px=8 and py=8 then print "someone has broke the lock of the   door. maybe we should check who's   inside."
  5115 if mp$="map01" and px=14 and py=10 then gosub 7000:rem the camp
  5998 window 0,0,39,24
@@ -336,7 +337,7 @@
  7550 print"defense:"de%
  7560 print"strength:"st%
  7570 print"{down}{down}{down}{lgrn}r{wht}e-roll":print"{lgrn}k{wht}eep":print"{lgrn}_{wht}back"
- 7580 getkey a$
+ 7580 gosub 20700
  7582 if a$=chr$(95) then 7030:rem back
  7585 if a$="r" then 7500:rem reroll
  7590 if a$="k" then cursor 0,7:print"       ":print"     ":goto 7610
@@ -344,7 +345,7 @@
  7610 cursor 0,6:print"       ":print"       ":print"       "
  7612 na$=""
  7615 cursor 0,4:print"name:                 "
- 7620 getkey a$
+ 7620 gosub 20700
  7625 if a$=chr$(13) and len(na$)>0 then 7700:rem return
  7627 if a$=chr$(20) then na$=left$(na$,abs(len(na$)-1)):goto 7632:rem del
  7630 if len(na$)<16 and(asc(a$)>64 and asc(a$)<91) or asc(a$)=32 then na$=na$+a$:rem only letters accepted
@@ -352,7 +353,7 @@
  7640 goto 7620
  7700 cursor 0,7:print"{lgrn}k{wht}eep"
  7710 print"{lgrn}_{wht}back"
- 7720 getkey a$
+ 7720 gosub 20700
  7730 if a$=chr$(95) then 7610 :rem back
  7740 if a$="k" then 7030: rem character completed
  7750 goto 7720
@@ -376,7 +377,7 @@
  8205 edma 0,1152,$802fb80+mp%*$480,$51380
  8210 print"you met a "mo$"."
  8212 print"do you want to {grn}f{wht}ight or {grn}r{wht}un away?"
- 8220 getkeya$
+ 8220 gosub 20700
  8230 ifa$="r"then8250
  8235 ifa$="f"then8300
  8240 goto8220
@@ -400,7 +401,74 @@
  9000 screen 0,320,200,5
  9010 char 8,64,1,1,2,"Your adventure ends here."
  9020 char 2,80,1,1,2,"Press q to quit or any other to restart."
- 9030 getkey a$
+ 9030 gosub 20700
  9035 if a$="q" then screen close: goto 2005
  9040 screen close
  9050 goto 150
+20000 rem *** init music vars ***
+20010 dim v1$(6):dim v2$(6):dim v3$(6):dim v4$(6):dim v5$(6):dim v6$(6)
+20020 t=0:rem music chunk index
+20030 tt=0:rem bar index
+20040 dim m(13)
+20050 m(0)= 0:m(1)= 0:m(2)= 1:m(3)= 1:m(4)= 2:m(5)= 2:m(6)= 3:m(7)= 3
+20060 m(8)= 4:m(9)= 4:m(10)= 5:m(11)= 5:m(12)=-3:m(13)= 0
+20070 v1$(0)="t6 o2 q c g g o1 #a o2 f f #d #a o3 #d f o2 a a o3 #d c o2 #d o3 d o2 b d o3 c o2 f #d h.c"
+20080 v2$(0)="t8 o2 h.c o1 .#a o1 .#d .f .#g .#a o2 .c o1 .c"
+20090 v3$(0)=""
+20100 v4$(0)="t6 o2 ir q#d o3 c o2 #d d #a d g g #a o3 c o2 f o3 c d o2 g g o3 c o2 g g g g ig h.g"
+20110 v5$(0)="t8 o2 h.c o1 .#a o1 .#d .f .#g .#a o2 .c o1 .c"
+20120 v6$(0)=""
+20130 v1$(1)="t6 o2 q c g g o1 #a o2 f f #d #a o3 #d f o2 a a o3 #d c o2 #d o3 d o2 b d o3 c o2 f #d h.c"
+20140 v2$(1)="t8 o1 h.c o0 .#a o1 .#d .f .#g .#a o2 .c o1 .c"
+20150 v3$(1)="t6m3 o5 q g f i#d sc#d q. d o5i #a sf#a if o5 q g f ic o4 s#ao5c o4 q.a io5fqg  o5 q.#g if c o4 i#a o5 #a f qd #a o6 q.c sdc o5ib g o6q.c o5icd#d"
+20160 v4$(1)="t6 o2 ir q#d o3 c o2 #d d #a d g g #a o3 c o2 f o3 c d o2 g g o3 c o2 g g g g ig h.g"
+20170 v5$(1)="t8 o1 h.c o0 .#a o1 .#d .f .#g .#a o2 .c o1 .c"
+20180 v6$(1)=""
+20190 v1$(2)="t6 o2 q c g g   o1 g o2d d  #d #a #a  o1#a o2 f f  c g g  o1#a o2 f f e o3c c  o2h.c"
+20200 v2$(2)="t8 o1 h.c .g .#d .#a o2 .c o1 .#a .e .c"
+20210 v3$(2)="t6 m3 o5 i#d f qg hr o4ig#g q#a hr o5 id#d qf hr o6ico5g#fg#dg q.d s#dd ic o4b o5q.e sfe idg h.e"
+20220 v4$(2)="t6 o2 ir q#d o3 c o2 #d  o1#a o2g o1#a  o2g o3#d o2g  d #a d  #d o3 c o2 #d  d #a d g o3e io2g h.g"
+20230 v5$(2)="t8 o1 h.c .g .#d .#a o2 .c o1 .#a .e .c"
+20240 v6$(2)="t6 m3 o5 hr icd q#d hr o5ig#g q#a hr o4 i#ao5c qd o5ig#dc#do4bo5#d o4q.#a so5co4#a ia g o5 q.c sdc io4bo5d h.c"
+20250 v1$(3)="t6 o2 q c g g o1 #a o2 f f #d #a o3 #d f o2 a a o3 #d c o2 #d o3 d o2 b d o3 c o2 f #d h.c"
+20260 v2$(3)="t8 o2 h.c o1 .#a o1 .#d .f .#g .#a o2 .c o1 .c"
+20270 v3$(3)="t2m0 o5 q c igcg#g #a#g qg #d  ig#ag#dc o4#a q.a o5ifo4ao5f  o4q#g o5i#ggf#d q.d s#dd ic o4#a qo5c io6co5g#dd h.c"
+20280 v4$(3)="t6 o2 ir q#d o3 c o2 #d d #a d g g #a o3 c o2 f o3 c d o2 g g o3 c o2 g g g g ig h.g"
+20290 v5$(3)="t8 o2 h.c o1 .#a o1 .#d .f .#g .#a o2 .c o1 .c"
+20300 v6$(3)="t2m0 o5 q #d io6co5#do6cd#dd qc o5g  o6icdco5#agf q.#d i#a#d#a  o5qc o6ico5#a#gg q.f sgf i#dd q#d  io6#d d c o5 g h.#d"
+20310 v1$(4)="t6 o2 q c g g o1 #a o2 f f #d #a o3 #d f o2 a a o3 #d c o2 #d o3 d o2 b d o3 c o2 f #d h.c"
+20320 v2$(4)="t8 o1 h.c o0 .#a o1 .#d .f .#g .#a o2 .c o1 .c"
+20330 v3$(4)="t7m3 o5 q g f i#d sc#d q. d o5i #a sf#a if o5 q g f ic o4 s#ao5c o4 q.a io5fqg  o5 q.#g if c o4 i#a o5 #a f qd #a o6 q.c sdc o5ib g o6q.c o5icd#d"
+20340 v4$(4)="t6 o2 ir q#d o3 c o2 #d d #a d g g #a o3 c o2 f o3 c d o2 g g o3 c o2 g g g g ig h.g"
+20350 v5$(4)="t8 o1 h.c o0 .#a o1 .#d .f .#g .#a o2 .c o1 .c"
+20360 v6$(4)="t7p0m0 o6 qc o5#a ig sfg q.f o6id so5#ao6d io5#a  o6q#d id#ddc q.f ico5ao6c o6i#ddco5g#dd o6dco5bgdo4b o6co5g#dg#dd h.c"
+20370 v1$(5)="t6 o2 q c g g   o1 g o2d d  #d #a #a  o1#a o2 f f  c g g  o1#a o2 f f e o3c c  o2h.c"
+20380 v2$(5)="t8 o1 h.c .g .#d .#a o2 .c o1 .#a .e .c"
+20390 v3$(5)="t7 m3 o5 i#d f qg hr o4ig#g q#a hr o5 id#d qf hr o6ico5g#fg#dg q.d s#dd ic o4b o5q.e sfe idg h.e"
+20400 v4$(5)="t6 o2 ir q#d o3 c o2 #d  o1#a o2g o1#a  o2g o3#d o2g  d #a d  #d o3 c o2 #d  d #a d g o3e io2g h.g"
+20410 v5$(5)="t8 o1 h.c .g .#d .#a o2 .c o1 .#a .e .c"
+20420 v6$(5)="t7 m3 o5 hr icd q#d hr o5ig#g q#a hr o4 i#ao5c qd o5ig#dc#do4bo5#d o4q.#a so5co4#a ia g o5 q.c sdc io4bo5d h.c"
+20430 envelope 0 , 0 , 9 , 0 , 0
+20440 envelope 1 , 12 , 0 , 12 , 0
+20450 envelope 2 , 2 , 6 , 0 , 0
+20460 envelope 3 , 0 , 5 , 5 , 0
+20470 envelope 4 , 9 , 4 , 4 , 0
+20480 envelope 5 , 0 , 9 , 2 , 1
+20490 envelope 6 , 0 , 11 , 0 , 0
+20500 envelope 7 , 0 , 12 , 0 , 0
+20510 envelope 8 , 3 , 13 , 0 , 1
+20520 envelope 9 , 0 , 9 , 0 , 0
+20530 return
+20540 rem *** poll for playing of next song chunk
+20550 if rplay(1) then return
+20560 t = m(tt) : rem musicandchunkandindex = mapandbarandtoandchunk(barandindex)
+20570 play v1$(t), v2$(t), v3$(t), v4$(t), v5$(t), v6$(t)
+20580 tt=tt+1
+20590 if m(tt) = -3 then tt = 0
+20600 return
+20700 rem *** getkey + poll music ***
+20710 do
+20720 gosub 20540
+20730 get a$
+20740 loop until a$ <>""
+20750 return
