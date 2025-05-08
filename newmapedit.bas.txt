@@ -1,0 +1,112 @@
+   10 cx=1:cy=1: rem default cursor position
+  100 printchr$(27)+"5"; :rem esc-5 50-row mode
+  110 scnclr
+  120 background 11:border 12
+  130 for y=1 to 20
+  135 for x=1 to 20
+  140 t@&(x*2+1,y*2)=96:c@&(x*2+1,y*2)=0 :rem sides
+  145 t@&(x*2,y*2)=102:c@&(x*2,y*2)=12  :rem cells
+  150 t@&(x*2,y*2+1)=96:c@&(x*2,y*2+1)=0:rem fronts
+  195 next x
+  200 next y
+  210 cursor 0,45:print"{wht}s: change {cyn}s{wht}ides{ensh}f: change {cyn}f{wht}ronts{ensh}c: {wht}special {cyn}c{wht}ell"
+  220 print"f1: load{ensh}f3: save{ensh}{ensh}q: {cyn}q{wht}uit"
+  230 cursor 45,3: print "walls:{ensh}"chr$(99) chr$(125)
+  235 cursor 45,4: print "doors:{ensh}"chr$(58) chr$(35)
+  240 cursor 45,5: print "trees:{ensh}"chr$(120)
+  245 cursor 45,6: print "camp :{ensh}"chr$(67)
+  300 rem -----main loop------
+  310 t@&(cx*2,cy*2)=81
+  350 getkey a$
+  360 if a$="q" then 1010 :rem quit
+  365 if a$=chr$(17) then t@&(cx*2,cy*2)=102:cy=mod(cy,20)+1 :rem down
+  367 if a$=chr$(145) then t@&(cx*2,cy*2)=102:cy=mod(cy-2,20)+1 :rem up
+  369 if a$=chr$(29) then t@&(cx*2,cy*2)=102:cx=mod(cx,20)+1   :rem right
+  370 if a$=chr$(157) then t@&(cx*2,cy*2)=102:cx=mod(cx-2,20)+1 :rem left
+  380 if a$<>chr$(67) then 400 :rem special cell
+  390 if c@&(cx*2,cy*2)=12 then c@&(cx*2,cy*2)=2: goto 400
+  395 if c@&(cx*2,cy*2)=2 then c@&(cx*2,cy*2)=12
+  400 if a$<>chr$(83) then 450 :rem change side
+  405 if t@&(cx*2+1,cy*2)=96 then t@&(cx*2+1,cy*2)=58 :goto 415: rem empty-door
+  410 if t@&(cx*2+1,cy*2)=58 then t@&(cx*2+1,cy*2)=93 :goto 420: rem door-wall
+  415 if t@&(cx*2+1,cy*2)=93 then t@&(cx*2+1,cy*2)=88 :goto 425: rem wall-tree
+  420 if t@&(cx*2+1,cy*2)=88 then t@&(cx*2+1,cy*2)=3 : goto 450: rem tree-camp
+  425 if t@&(cx*2+1,cy*2)=3  then t@&(cx*2+1,cy*2)=96: goto 500: rem camp-empty
+  450 rem
+  500 if a$<>chr$(70) then 600 :rem change front
+  505 if t@&(cx*2,cy*2+1)=96 then t@&(cx*2,cy*2+1)=35  :goto 515: rem empty-door
+  510 if t@&(cx*2,cy*2+1)=35 then t@&(cx*2,cy*2+1)=67  :goto 520: rem door-wall
+  515 if t@&(cx*2,cy*2+1)=67 then t@&(cx*2,cy*2+1)=88 :goto 525: rem wall-tree
+  520 if t@&(cx*2,cy*2+1)=88 then t@&(cx*2,cy*2+1)=3 : goto 550: rem tree-camp
+  525 if t@&(cx*2,cy*2+1)=3  then t@&(cx*2,cy*2+1)=96: goto 600: rem camp-tree
+  550 rem
+  600 rem
+  610 if a$=chr$(88) then gosub 2000 :rem load map
+  620 if a$=chr$(13) then gosub 3000 :rem save map
+  695 t@&(cx*2,cy*2)=81
+  700 goto 350
+ 1000 rem -----quit, switch back to 80x25------
+ 1010 printchr$(27)+"8"; :rem esc-8 25-row mode
+ 1020 print"bye!"
+ 1030 end
+ 2000 rem -----load map-----
+ 2010 border 5
+ 2015 cursor 0,48: input"enter number of map (1-9)";n%
+ 2017 if n%<10 then f$="map0"+right$(str$(n%),1):goto 2020
+ 2018 goto 2980
+ 2020 dopen#5,(f$)
+ 2100 for y=1to20
+ 2110 for x=1to20
+ 2200 get#5,fr$
+ 2210 get#5,si$
+ 2222 if fr$=chr$(9) then t@&(x*2,y*2+1)=35 :rem front door
+ 2224 if fr$=chr$(1) then t@&(x*2,y*2+1)=67 :rem front wall
+ 2226 if fr$=chr$(2) then t@&(x*2,y*2+1)=88 :rem front tree
+ 2227 if fr$=chr$(10) then t@&(x*2,y*2+1)=3 :rem front camp
+ 2228 if fr$=chr$(0) then t@&(x*2,y*2+1)=96 :rem front empty
+ 2322 if si$=chr$(9)then t@&(x*2+1,y*2)=58 :rem side door
+ 2324 if si$=chr$(1)then t@&(x*2+1,y*2)=93 :rem side wall
+ 2326 if si$=chr$(2)then t@&(x*2+1,y*2)=88 :rem side tree
+ 2327 if si$=chr$(10)then t@&(x*2+1,y*2)=3 :rem side camp
+ 2328 if si$=chr$(0)then t@&(x*2+1,y*2)=96 :rem side empty
+ 2350 get#5,sp$
+ 2360 if sp$=chr$(1) then c@&(x*2,y*2)=2
+ 2365 if sp$=chr$(0) then c@&(x*2,y*2)=12
+ 2400 next x
+ 2410 next y
+ 2500 dclose#5
+ 2980 border 12
+ 2990 return
+ 3000 rem -----save map-----
+ 3010 border 8
+ 3015 cursor 0,48: input"enter number of map (1-9)";n%
+ 3017 if n%<10 then f$="@map0"+right$(str$(n%),1):goto 3020
+ 3018 goto 3980
+ 3019 scratch,(f$)
+ 3020 dopen#5,(f$),w
+ 3100 for y=1to20
+ 3110 for x=1to20
+ 3120 d=t@&(x*2,y*2+1)
+ 3122 if d=35 then da&=9 :rem door
+ 3124 if d=67 then da&=1 :rem wall
+ 3126 if d=88 then da&=2 :rem tree
+ 3127 if d=3  then da&=10:rem camp
+ 3128 if d=96 then da&=0 :rem empty
+ 3129 fr$=chr$(da&): print#5,fr$;
+ 3130 d=t@&(x*2+1,y*2)
+ 3132 if d=58 then da&=9 :rem door
+ 3134 if d=93 then da&=1 :rem wall
+ 3136 if d=88 then da&=2 :rem tree
+ 3137 if d=3  then da&=10:rem camp
+ 3138 if d=96 then da&=0 :rem empty
+ 3139 si$=chr$(da&): print#5,si$;
+ 3150 p=c@&(x*2,y*2)
+ 3155 if p=2 then sc&=1  :rem special cell
+ 3160 if p=12 then sc&=0 :rem not special
+ 3170 sp$=chr$(sc&):print#5,sp$;
+ 3400 next x
+ 3410 next y
+ 3500 dclose#5
+ 3510 cursor 0,48: print f$" has been saved                           "
+ 3980 border 12
+ 3990 return

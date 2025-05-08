@@ -1,0 +1,278 @@
+   10 rem to do:
+   20 rem start screen graphics
+   30 rem start screen options
+   33 rem add a background to the pov area (sky, ground)
+   35 rem clear up the code by using a lookup table for calculating visible fronts and sides
+   36 rem update to use multiple type of walls
+   40 rem character generation
+   50 rem monsters
+   51 restore 5040
+   60 rem grid loading: ok
+   70 rem npcs
+   80 rem quests
+   90 rem victory
+  100 rem battle
+  110 rem --------------------
+  120 rem initialization
+  125 mem 1,3: graphic clr: rem reserve screen memory for charset
+  126 n$="10.chr": d8=peek($d068): d9=peek($d069): da=peek($d06a)
+  127 poke $d068,$00:poke $d069,$10:poke $d06a,$05
+  128     bload (n$), p($51000)
+  130 px=10:py=10: rem player coordinates
+  140 dim sp&(20,20):rem special cells
+  142 dim fr&(20,20)
+  144 dim si&(20,20)
+  146 dim vs&(16): rem view of side of cells
+  148 dim vf&(16): rem view of front of cells
+  150 di=1 :rem direction of player 1n 2e 3s 4w
+  499 rem start screen
+  500 border 0: background 11
+  505 screen 0,320,200,5 :rem 32 colours
+  510 screen 1,320,200,5 :rem second screen
+  515 bload"bgnd01",p($8000000)
+  520 bload"16wallsatt",p($8000810)
+  530 rem load graphics
+  540 screen set 0,0
+  545 char 7,8,2,1,2,"The Thing of a Bad Thing"
+  546 char 6,40,1,1,2,"A Role-Playing Game Engine"
+  547 char 16,30,1,1,2,"- ~ -"
+  550 getkey a$
+  599 rem start screen options
+  600 char 10,80,1,1,2,"1. Load game"
+  610 char 10,88,1,1,2,"2. Start game"
+  680 getkey a$
+  690 if a$="2" then 700
+  698 goto 680
+  699 rem load grid--------------------------
+  700 screen close 1:screen close 0 :scnclr:print"{wht}"
+  705 if rwindow(2)=80 then print chr$(27)+"x": rem switch to 40 columns
+  706 fb=$8000000 :rem here begins the attic ram
+  707 sl=$810:fa=fb+sl
+  709 dopen#5,"map01"
+  710 for y=1to20
+  720 for x=1to20
+  730 get#5,fr&(x,y) : get#5,si&(x,y) : get#5,sp&(x,y)
+  740 next x
+  750 next y
+  755 dclose#5
+  760 rem ----------------------------------
+  770 rem ----place 144 characters to the view----
+  780 for x=1to12
+  790 for y=1to12
+  800 t@&(2+x-1,y+1)=(x-1)*12+(y-1)+112
+  810 next y
+  820 next x
+  998 rem -------------------------------------
+  999 rem main loop
+ 1000 gosub 3000
+ 1010 if sp&(px,py)=1 then gosub 5110
+ 1500 getkey a$
+ 1510 if a$=chr$(145) and(vf&(11)<9 and vf&(11)<>0) then 1560
+ 1520 if a$=chr$(145) and di=1 then py=py-1
+ 1530 if a$=chr$(145) and di=3 then py=py+1
+ 1540 if a$=chr$(145) and di=2 then px=px+1
+ 1550 if a$=chr$(145) and di=4 then px=px-1
+ 1560 if a$=chr$(29) then di=di+1
+ 1570 if a$=chr$(157) then di=di-1
+ 1580 if a$=chr$(17) and di<3 then di=di+2:goto 1600
+ 1590 if a$=chr$(17) and di>2 then di=di-2
+ 1600 if py=0 then py=20
+ 1610 if py=21 then py=1
+ 1620 if px=0 then px=20
+ 1630 if px=21 then px=1
+ 1640 if di=5 then di=1
+ 1650 if di=0 then di=4
+ 1660 if a$=chr$(81) then 2000: rem quit
+ 1900 goto 1000
+ 1999 rem -----------end of main loop--------------
+ 2000 print "{wht}"
+ 2005 print chr$(27)+"x" :rem switch back to 80 columns
+ 2006 poke $d068,d8:poke $d069,d9:poke $d06a,da
+ 2010 end
+ 2465 rem --------------
+ 2999 rem -----draw the view------
+ 3000 rem
+ 3001 rem
+ 3005 rem pen 5:box 16,63,112,112,1
+ 3006 rem instr  instr  instr  instr  instr  instr
+ 3007 rem ----------------
+ 3008 rem instr15instr5 instr14instr10instr16instr
+ 3009 rem ----------------
+ 3010 rem instr  instr4 instr13instr9 instr  instr
+ 3011 rem ----------------
+ 3012 rem instr  instr3 instr12instr8 instr  instr
+ 3013 rem ----------------
+ 3014 rem instr  instr2 instr11instr7 instr  instr
+ 3015 rem ----------------
+ 3016 rem instr  instr1 instrp instr6 instr  instr
+ 3018 if di>1 then goto 3040:rem if not north
+ 3019 restore 5000
+ 3020 for i=1to16
+ 3022 read dx,dy,ex,ey :rem read delta frontx-y , sidex-y
+ 3023 x=px+dx: y=py+dy
+ 3024 x=mod(x-1,20)+1 : y=mod(y-1,20)+1
+ 3025 vf&(i)=fr&(x,y)
+ 3030 x=px+ex: y=py+ey
+ 3031 x=mod(x-1,20)+1 : y=mod(y-1,20)+1
+ 3032 vs&(i)=si&(x,y)
+ 3039 next i
+ 3040 if di<>2 then goto 3080:rem if not east
+ 3041 restore 5017
+ 3042 for i=1to16
+ 3043 read dx,dy,ex,ey :rem read delta frontx-y , sidex-y
+ 3044 x=px+dx: y=py+dy
+ 3045 x=mod(x-1,20)+1 : y=mod(y-1,20)+1
+ 3046 vs&(i)=fr&(x,y)
+ 3047 x=px+ex: y=py+ey
+ 3048 x=mod(x-1,20)+1 : y=mod(y-1,20)+1
+ 3049 vf&(i)=si&(x,y)
+ 3050 next i
+ 3080 if di<>3 then goto 3120:rem if not south
+ 3081 restore 5040
+ 3082 for i=1to16
+ 3083 read dx,dy,ex,ey :rem read delta frontx-y , sidex-y
+ 3084 x=px+dx: y=py+dy
+ 3085 x=mod(x-1,20)+1 : y=mod(y-1,20)+1
+ 3086 vf&(i)=fr&(x,y)
+ 3087 x=px+ex: y=py+ey
+ 3088 x=mod(x-1,20)+1 : y=mod(y-1,20)+1
+ 3089 vs&(i)=si&(x,y)
+ 3090 next i
+ 3120 if di<>4 then goto 3230:rem if not west
+ 3121 restore 5060
+ 3122 for i=1to16
+ 3123 read dx,dy,ex,ey :rem read delta frontx-y , sidex-y
+ 3124 x=px+dx: y=py+dy
+ 3125 x=mod(x-1,20)+1 : y=mod(y-1,20)+1
+ 3126 vs&(i)=fr&(x,y)
+ 3127 x=px+ex: y=py+ey
+ 3128 x=mod(x-1,20)+1 : y=mod(y-1,20)+1
+ 3129 vf&(i)=si&(x,y)
+ 3139 next i
+ 3230 rem --draw objects--
+ 3240 cm=gr&(cx,cy)
+ 3245 cursor 25,5:print px,py
+ 3247 rem
+ 3250 rem ----houses-----
+ 3255 edma 0,1152,fb,$51380 :rem clear background
+ 3260 if vs&(1)>0 then edma 0,96,fb+vs&(1)*sl,$51380 :goto 3265:rem col1
+ 3261 if vf&(2)>0 then edma 0,88,fb+vf&(2)*sl+1432,$51380: goto 3265 :rem col1
+ 3262 if vf&(3)>0 then edma 0,56,fb+vf&(3)*sl+1688,$51390: goto 3265 :rem col1
+ 3263 if vf&(4)>0 then edma 0,40,fb+vf&(4)*sl+1856,$51398: goto 3265 :rem col1
+ 3265 if vs&(6)>0 then edma 0,96,fb+vs&(6)*sl+96,$517a0 :goto 3270: rem col12
+ 3266 if vf&(7)>0 then edma 0,88,fb+vf&(7)*sl+640,$517a0 :goto 3270: rem col12
+ 3267 if vf&(8)>0 then edma 0,56,fb+vf&(8)*sl+1632,$517b0: goto 3270 :rem col12
+ 3268 if vf&(9)>0 then edma 0,40,fb+vf&(9)*sl+1976,$517b8: goto 3270 :rem col12
+ 3270 if vf&(11)=0 then 3280 :rem if no house at immediate front
+ 3271 edma 0,88,fb+vf&(11)*sl+640,$513e0 : edma 0,88,fb+vf&(11)*sl+728,$51440
+ 3272 edma 0,88,fb+vf&(11)*sl+816,$514a0 : edma 0,88,fb+vf&(11)*sl+904,$51500
+ 3273 edma 0,88,fb+vf&(11)*sl+992,$51560 : edma 0,88,fb+vf&(11)*sl+1080,$515c0
+ 3274 edma 0,88,fb+vf&(11)*sl+1168,$51620 : edma 0,88,fb+vf&(11)*sl+1256,$51680
+ 3275 edma 0,88,fb+vf&(11)*sl+1344,$516e0 : edma 0,88,fb+vf&(11)*sl+1432,$51740: goto 3660
+ 3279 rem ----col2-3,10-11----
+ 3280 if vs&(2)>0 then edma 0,80,fb+vs&(2)*sl+192,$513e8 :edma 0,64,fb+vs&(2)*sl+272,$51450: goto 3290:rem col2-3
+ 3282 if vf&(3)>0 then edma 0,56,fb+vf&(3)*sl+1744,$513f0:edma 0,56,fb+vf&(3)*sl+1800,$51450: goto 3290
+ 3284 if vf&(4)>0 then edma 0,40,fb+vf&(4)*sl+1896,$513f8:edma 0,40,fb+vf&(4)*sl+1936,$51458: goto 3290
+ 3285 if vf&(15)>0 and(di=2ordi=4)and vs&(15)=0 then 3290
+ 3286 if vf&(15)>0 then edma 0,24,fb+vf&(15)*sl+2016,$51400:edma 0,24,fb+vf&(15)*sl+2040,$51460
+ 3290 if vs&(7)>0 then edma 0,80,fb+vs&(7)*sl+400,$51748 :edma 0,64,fb+vs&(7)*sl+336,$516f0: goto 3300:rem col10-11
+ 3292 if vf&(8)>0 then edma 0,56,fb+vf&(8)*sl+1576,$51750:edma 0,56,fb+vf&(8)*sl+1520,$516f0:goto 3300
+ 3294 if vf&(9)>0 then edma 0,40,fb+vf&(9)*sl+1936,$51758:edma 0,40,fb+vf&(9)*sl+1896,$516f8:goto 3300
+ 3295 if vf&(16)>0 and(di=4ordi=2)and vs&(16)=0 then 3330
+ 3296 if vf&(16)>0 then edma 0,24,fb+vf&(16)*sl+2040,$51760:edma 0,24,fb+vf&(16)*sl+2016,$51700
+ 3298 rem ----col4-5,8-9----
+ 3300 if vf&(12)=0 then 3306 :rem if no house at middle front
+ 3302 edma 0,56,fb+vf&(12)*sl+1520,$514b0 :edma 0,56,fb+vf&(12)*sl+1576,$51510
+ 3303 edma 0,56,fb+vf&(12)*sl+1632,$51570 :edma 0,56,fb+vf&(12)*sl+1688,$515d0
+ 3304 edma 0,56,fb+vf&(12)*sl+1744,$51630 :edma 0,56,fb+vf&(12)*sl+1800,$51690: goto 3660
+ 3306 if vs&(3)>0 then edma 0,48,fb+vs&(3)*sl+480,$514b8: goto 3312:rem col4
+ 3308 if vf&(4)>0 then edma 0,40,fb+vf&(4)*sl+1976,$514b8:goto 3312:rem col5
+ 3310 if vf&(5)>0 then edma 0,24,fb+vf&(5)*sl+2016,$514c0:goto 3312:rem col5
+ 3312 if vs&(8)>0 then edma 0,48,fb+vs&(8)*sl+528,$51698: goto 3320:rem col10
+ 3314 if vf&(9)>0 then edma 0,40,fb+vf&(9)*sl+1856,$51698:goto 3320:rem col5
+ 3316 if vf&(10)>0 then edma 0,24,fb+vf&(10)*sl+2040,$516a0:goto 3320:rem col5
+ 3319 rem ----
+ 3320 if vf&(13)=0 then 3330
+ 3322 edma 0,40,fb+vf&(13)*sl+1856,$51518 : edma 0,40,fb+vf&(13)*sl+1896,$51578
+ 3324 edma 0,40,fb+vf&(13)*sl+1936,$515d8 : edma 0,40,fb+vf&(13)*sl+1976,$51638:goto 3660
+ 3330 if vs&(4)>0 then edma 0,32,fb+vs&(4)*sl+576,$51520: goto 3340
+ 3332 if vf&(5)>0 then edma 0,24,fb+vf&(5)*sl+2040,$51520: goto 3340
+ 3340 if vs&(9)>0 then edma 0,32,fb+vs&(9)*sl+608,$51640: goto 3350
+ 3342 if vf&(10)>0 then edma 0,24,fb+vf&(10)*sl+2016,$51640: goto 3350
+ 3344 if vf&(10)>0 then edma 0,24,fb+vf&(10)*sl+2040,$516a0
+ 3350 if vf&(14)>0 then edma 0,24, fb+vf&(14)*sl+2016,$51580
+ 3352 if vf&(14)>0 then edma 0,24, fb+vf&(14)*sl+2040,$515e0
+ 3660 return
+ 4998 rem ---lookup table of visible cells---
+ 4999 rem delta fx,fy,sx,sy
+ 5000 rem direction=1 (fronts,sides)
+ 5001 data -1, 0,-1, 0
+ 5002 data -1,-1,-1,-1
+ 5003 data -1,-2,-1,-2
+ 5004 data -1,-3,-1,-3
+ 5005 data -1,-4,-1,-4
+ 5006 data  1, 0, 0, 0
+ 5007 data  1,-1, 0,-1
+ 5008 data  1,-2, 0,-2
+ 5009 data  1,-3, 0,-3
+ 5010 data  1,-4, 0,-4
+ 5011 data  0,-1, 0,-1
+ 5012 data  0,-2, 0,-2
+ 5013 data  0,-3, 0,-3
+ 5014 data  0,-4, 0,-4
+ 5015 data -2,-4,-2,-4
+ 5016 data  2,-4, 1,-4
+ 5017 rem direction=2 (sides view first, fronts view next)
+ 5021 data  0,-1,-1,-1
+ 5022 data  1,-1, 0,-1
+ 5023 data  2,-1, 1,-1
+ 5024 data  3,-1, 2,-1
+ 5025 data  4,-1, 3,-1
+ 5026 data  0, 0,-1, 1
+ 5027 data  1, 0, 0, 1
+ 5028 data  2, 0, 1, 1
+ 5029 data  3, 0, 2, 1
+ 5030 data  4, 0, 3, 1
+ 5031 data  0, 0, 0, 0
+ 5032 data  0, 0, 1, 0
+ 5033 data  0, 0, 2, 0
+ 5034 data  0, 0, 3, 0
+ 5035 data  4,-2, 3,-2
+ 5036 data  4, 1, 3, 2
+ 5040 rem direction=3  (fronts, sides)
+ 5041 data  1,-1, 0, 0
+ 5042 data  1, 0, 0, 1
+ 5043 data  1, 1, 0, 2
+ 5044 data  1, 2, 0, 3
+ 5045 data  1, 3, 0, 4
+ 5046 data -1,-1,-1, 0
+ 5047 data -1, 0,-1, 1
+ 5048 data -1, 1,-1, 2
+ 5049 data -1, 2,-1, 3
+ 5050 data -1, 3,-1, 4
+ 5051 data  0, 0, 0, 0
+ 5052 data  0, 1, 0, 0
+ 5053 data  0, 2, 0, 0
+ 5054 data  0, 3, 0, 0
+ 5055 data  2, 3, 1, 4
+ 5056 data -2, 3,-2, 4
+ 5060 rem direction=4 (sides, fronts)
+ 5061 data  0, 0, 0, 1
+ 5062 data -1, 0,-1, 1
+ 5063 data -2, 0,-2, 1
+ 5064 data -3, 0,-3, 1
+ 5065 data -4, 0,-4, 1
+ 5066 data  0,-1, 0,-1
+ 5067 data -1,-1,-1,-1
+ 5068 data -2,-1,-2,-1
+ 5069 data -3,-1,-3,-1
+ 5070 data -4,-1,-4,-1
+ 5071 data  0, 0,-1, 0
+ 5072 data  0, 0,-2, 0
+ 5073 data  0, 0,-3, 0
+ 5074 data  0, 0,-4, 0
+ 5075 data -4, 2,-4, 2
+ 5076 data -4,-2,-4,-2
+ 5100 rem ------evaluate the special cells------
+ 5110 cursor 0,20: print "someone has broke the lock on the door. maybe we should check who's inside".
+ 5999 return

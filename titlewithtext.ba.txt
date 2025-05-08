@@ -1,0 +1,9 @@
+   10 screen 0,320,200,4
+   20 loadiff"titlescreen.iff"
+   25 pen 8
+   30 char 10,20,2,2,2,"The Woods"
+   35 char 17,40,2,2,2,"of"
+   40 char 13,60,2,2,2,"Perils"
+  100 getkey a$
+  105 saveiff"titletext.iff"
+  110 screen close 0
