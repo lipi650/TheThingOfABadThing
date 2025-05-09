@@ -1,0 +1,495 @@
+   10 rem to do:
+   20 rem inventory
+   70 rem npcs
+   80 rem quests
+   90 rem victory
+  100 rem battle
+  110 rem --------------------
+  120 rem initialization
+  121 mu=1:rem music on-off
+  122 gosub 20000:rem init music
+  125 mem 1,3: graphic clr: rem reserve screen memory for charset
+  126 n$="10.chr": d8=peek($d068): d9=peek($d069): da=peek($d06a)
+  127 poke $d068,$00:poke $d069,$10:poke $d06a,$05
+  128 bload (n$), p($51000)
+  140 dim sp&(20,20):rem special cells
+  142 dim fr&(20,20)
+  144 dim si&(20,20)
+  146 dim vs&(18): rem view of side of cells
+  148 dim vf&(18): rem view of front of cells
+  150 di=1 :rem direction of player 1n 2e 3s 4w
+  160 px=14:py=10: rem player coordinates
+  165 mp$="map01":wm%=7:mn=1:mx=2:rem default map, chance of wandering monster, monster level min-max
+  499 rem start screen
+  500 border 0: background 11
+  505 screen 0,320,200,4 :rem 16 colours
+  510 screen 1,320,200,4 :rem second screen
+  520 screen set 0,1
+  530 rem load graphics
+  540 loadiff"titlescreen.iff"
+  541 rem gosub 20540:rem start playing music - moved this lower to avoid lag during load
+  542 screen set 0,0:loadiff"titletext.iff"
+  543 pen 14
+  545 rem char 7,8,2,1,2,"The Thing of a Bad Thing"
+  546 rem char 6,40,1,1,2,"A Role-Playing Game Engine"
+  547 rem char 16,30,1,1,2,"- ~ -"
+  548 char 5,176,1,1,2,"Code and Gfx by Gabor Lipcsei"
+  549 char 7,184,1,1,2,"Music by Gurce Isikyildiz"
+  555 bload"bgnd01",p($8000000)
+  560 bload"16wallsatt",p($8000810)
+  565 bload"spec01",p($8020000)
+  567 bload"mons01",p($8030000)
+  570 rem
+  599 rem start screen options
+  600 char 12,192,1,1,2,"Press any key"
+  670 gosub 20540:rem start playing music
+  680 gosub 20700:rem getkey + poll music
+  699 rem load grid--------------------------
+  700 screen close 1:screen close 0 :scnclr:print"{wht}"
+  705 if rwindow(2)=80 then print chr$(27)+"x": rem switch to 40 columns
+  706 gosub 3710
+  707 fb=$8000000 :rem here begins the attic ram
+  708 sl=$810:fa=fb+sl
+  709 dopen#5,(mp$)
+  710 for y=1to20
+  720 for x=1to20
+  730 get#5,fr&(x,y) : get#5,si&(x,y) : get#5,sp&(x,y)
+  740 next x
+  750 next y
+  755 dclose#5
+  760 rem ----------------------------------
+  770 rem ----place 144 characters to the view----
+  780 for x=1to12
+  790 for y=1to12
+  800 t@&(2+x-1,y+1)=(x-1)*12+(y-1)+112
+  810 next y
+  820 next x
+  998 rem -------------------------------------
+  999 rem main loop
+ 1000 gosub 3000:rem draw the view
+ 1002 ml%=0
+ 1005 gosub 6000:rem print player stats
+ 1010 gosub 5110: rem check special cells
+ 1020 if int(rnd(0)*100)+1<wm% then gosub 7800:rem wandering monster
+ 1025 ifst%<1 then gosub 20700:goto 9000
+ 1030 ifml%>0thengosub8200:rem combat
+ 1500 gosub 20700
+ 1510 if a$=chr$(145) and(vf&(11)<9 and vf&(11)<>0) then 1560
+ 1520 if a$=chr$(145) and di=1 then py=py-1
+ 1530 if a$=chr$(145) and di=3 then py=py+1
+ 1540 if a$=chr$(145) and di=2 then px=px+1
+ 1550 if a$=chr$(145) and di=4 then px=px-1
+ 1560 if a$=chr$(29) then di=di+1
+ 1570 if a$=chr$(157) then di=di-1
+ 1580 if a$=chr$(17) then di=mod(di+1,4)+1:goto 1600
+ 1600 if py=0 then py=20
+ 1610 if py=21 then py=1
+ 1620 if px=0 then px=20
+ 1630 if px=21 then px=1
+ 1640 if di=5 then di=1
+ 1650 if di=0 then di=4
+ 1660 if a$="e"thengosub2000: rem exit
+ 1670 if a$="i"thengosub8500
+ 1680 if a$="m"andmu=1thenmu=1-mu:play:goto1500
+ 1682 if a$="m"andmu=0thenmu=1-mu:gosub20430:goto1500
+ 1900 goto1000
+ 1999 rem -----------end of main loop--------------
+ 2000 window2,16,37,23
+ 2001 print "{wht}"
+ 2002 cursor0,7:print "do you want to leave the game?"
+ 2003 gosub 20700
+ 2004 ifa$<>"y"thenscnclr:window17,3,37,14:return
+ 2005 print chr$(27)+"x" :rem switch back to 80 columns
+ 2006 poke $d068,d8:poke $d069,d9:poke $d06a,da
+ 2010 end
+ 2465 rem --------------
+ 2999 rem -----draw the view------
+ 3000 rem
+ 3001 rem
+ 3005 rem pen 5:box 16,63,112,112,1
+ 3006 rem instr  instr  instr  instr  instr  instr
+ 3007 rem ----------------
+ 3008 rem instr15instr5 instr14instr10instr16instr
+ 3009 rem ----------------
+ 3010 rem instr17instr4 instr13instr9 instr18instr
+ 3011 rem ----------------
+ 3012 rem instr  instr3 instr12instr8 instr  instr
+ 3013 rem ----------------
+ 3014 rem instr  instr2 instr11instr7 instr  instr
+ 3015 rem ----------------
+ 3016 rem instr  instr1 instrp instr6 instr  instr
+ 3018 if di>1 then goto 3040:rem if not north
+ 3019 restore 5000
+ 3020 for i=1to18
+ 3022 read dx,dy,ex,ey :rem read delta frontx-y , sidex-y
+ 3023 x=px+dx: y=py+dy
+ 3024 x=mod(x-1,20)+1 : y=mod(y-1,20)+1
+ 3025 vf&(i)=fr&(x,y)
+ 3030 x=px+ex: y=py+ey
+ 3031 x=mod(x-1,20)+1 : y=mod(y-1,20)+1
+ 3032 vs&(i)=si&(x,y)
+ 3039 next i
+ 3040 if di<>2 then goto 3080:rem if not east
+ 3041 restore 5020
+ 3042 for i=1to18
+ 3043 read dx,dy,ex,ey :rem read delta frontx-y , sidex-y
+ 3044 x=px+dx: y=py+dy
+ 3045 x=mod(x-1,20)+1 : y=mod(y-1,20)+1
+ 3046 vs&(i)=fr&(x,y)
+ 3047 x=px+ex: y=py+ey
+ 3048 x=mod(x-1,20)+1 : y=mod(y-1,20)+1
+ 3049 vf&(i)=si&(x,y)
+ 3050 next i
+ 3080 if di<>3 then goto 3120:rem if not south
+ 3081 restore 5040
+ 3082 for i=1to18
+ 3083 read dx,dy,ex,ey :rem read delta frontx-y , sidex-y
+ 3084 x=px+dx: y=py+dy
+ 3085 x=mod(x-1,20)+1 : y=mod(y-1,20)+1
+ 3086 vf&(i)=fr&(x,y)
+ 3087 x=px+ex: y=py+ey
+ 3088 x=mod(x-1,20)+1 : y=mod(y-1,20)+1
+ 3089 vs&(i)=si&(x,y)
+ 3090 next i
+ 3120 if di<>4 then goto 3230:rem if not west
+ 3121 restore 5060
+ 3122 for i=1to18
+ 3123 read dx,dy,ex,ey :rem read delta frontx-y , sidex-y
+ 3124 x=px+dx: y=py+dy
+ 3125 x=mod(x-1,20)+1 : y=mod(y-1,20)+1
+ 3126 vs&(i)=fr&(x,y)
+ 3127 x=px+ex: y=py+ey
+ 3128 x=mod(x-1,20)+1 : y=mod(y-1,20)+1
+ 3129 vf&(i)=si&(x,y)
+ 3139 next i
+ 3230 rem --draw objects--
+ 3240 cm=gr&(cx,cy)
+ 3242 window 0,0,39,24
+ 3245 cursor 25,0:print "   {left}{left}{left}"px:cursor 28,0:print "    {left}{left}{left}"py
+ 3247 rem
+ 3250 rem
+ 3255 edma 0,1152,fb,$51380 :rem clear background
+ 3260 if vs&(1)>0 then edma 0,96,fb+vs&(1)*sl,$51380 :goto 3265:rem col1
+ 3261 if vf&(2)>0 then edma 0,88,fb+vf&(2)*sl+1432,$51380: goto 3265 :rem col1
+ 3262 if vf&(3)>0 then edma 0,56,fb+vf&(3)*sl+1688,$51390: goto 3265 :rem col1
+ 3263 if vf&(4)>0 then edma 0,40,fb+vf&(4)*sl+1856,$51398: goto 3265 :rem col1
+ 3265 if vs&(6)>0 then edma 0,96,fb+vs&(6)*sl+96,$517a0 :goto 3270: rem col12
+ 3266 if vf&(7)>0 then edma 0,88,fb+vf&(7)*sl+640,$517a0 :goto 3270: rem col12
+ 3267 if vf&(8)>0 then edma 0,56,fb+vf&(8)*sl+1632,$517b0: goto 3270 :rem col12
+ 3268 if vf&(9)>0 then edma 0,40,fb+vf&(9)*sl+1976,$517b8: goto 3270 :rem col12
+ 3270 if vf&(11)=0 then 3280 :rem if no house at immediate front
+ 3271 edma 0,88,fb+vf&(11)*sl+640,$513e0 : edma 0,88,fb+vf&(11)*sl+728,$51440
+ 3272 edma 0,88,fb+vf&(11)*sl+816,$514a0 : edma 0,88,fb+vf&(11)*sl+904,$51500
+ 3273 edma 0,88,fb+vf&(11)*sl+992,$51560 : edma 0,88,fb+vf&(11)*sl+1080,$515c0
+ 3274 edma 0,88,fb+vf&(11)*sl+1168,$51620 : edma 0,88,fb+vf&(11)*sl+1256,$51680
+ 3275 edma 0,88,fb+vf&(11)*sl+1344,$516e0 : edma 0,88,fb+vf&(11)*sl+1432,$51740: goto 3660
+ 3279 rem ----col2-3,10-11----
+ 3280 if vs&(2)>0 then edma 0,80,fb+vs&(2)*sl+192,$513e8 :edma 0,64,fb+vs&(2)*sl+272,$51450: goto 3290:rem col2-3
+ 3282 if vf&(3)>0 then edma 0,56,fb+vf&(3)*sl+1744,$513f0:edma 0,56,fb+vf&(3)*sl+1800,$51450: goto 3290
+ 3284 if vf&(4)>0 then edma 0,40,fb+vf&(4)*sl+1896,$513f8:edma 0,40,fb+vf&(4)*sl+1936,$51458: goto 3290
+ 3286 if vf&(15)>0 and vf&(17)=0 then edma 0,24,fb+vf&(15)*sl+2016,$51400:edma 0,24,fb+vf&(15)*sl+2040,$51460
+ 3290 if vs&(7)>0 then edma 0,80,fb+vs&(7)*sl+400,$51748 :edma 0,64,fb+vs&(7)*sl+336,$516f0: goto 3300:rem col10-11
+ 3292 if vf&(8)>0 then edma 0,56,fb+vf&(8)*sl+1576,$51750:edma 0,56,fb+vf&(8)*sl+1520,$516f0:goto 3300
+ 3294 if vf&(9)>0 then edma 0,40,fb+vf&(9)*sl+1936,$51758:edma 0,40,fb+vf&(9)*sl+1896,$516f8:goto 3300
+ 3297 if vf&(16)>0 and vf&(18)=0 then edma 0,24,fb+vf&(16)*sl+2040,$51760:edma 0,24,fb+vf&(16)*sl+2016,$51700
+ 3298 rem ----col4-5,8-9----
+ 3300 if vf&(12)=0 then 3306 :rem if no house at middle front
+ 3302 edma 0,56,fb+vf&(12)*sl+1520,$514b0 :edma 0,56,fb+vf&(12)*sl+1576,$51510
+ 3303 edma 0,56,fb+vf&(12)*sl+1632,$51570 :edma 0,56,fb+vf&(12)*sl+1688,$515d0
+ 3304 edma 0,56,fb+vf&(12)*sl+1744,$51630 :edma 0,56,fb+vf&(12)*sl+1800,$51690: goto 3660
+ 3306 if vs&(3)>0 then edma 0,48,fb+vs&(3)*sl+480,$514b8: goto 3312:rem col4
+ 3308 if vf&(4)>0 then edma 0,40,fb+vf&(4)*sl+1976,$514b8:goto 3312:rem col5
+ 3310 if vf&(5)>0 then edma 0,24,fb+vf&(5)*sl+2016,$514c0:goto 3312:rem col5
+ 3312 if vs&(8)>0 then edma 0,48,fb+vs&(8)*sl+528,$51698: goto 3320:rem col10
+ 3314 if vf&(9)>0 then edma 0,40,fb+vf&(9)*sl+1856,$51698:goto 3320:rem col5
+ 3316 if vf&(10)>0 then edma 0,24,fb+vf&(10)*sl+2040,$516a0:goto 3320:rem col5
+ 3319 rem ----
+ 3320 if vf&(13)=0 then 3330
+ 3322 edma 0,40,fb+vf&(13)*sl+1856,$51518 : edma 0,40,fb+vf&(13)*sl+1896,$51578
+ 3324 edma 0,40,fb+vf&(13)*sl+1936,$515d8 : edma 0,40,fb+vf&(13)*sl+1976,$51638:goto 3660
+ 3330 if vs&(4)>0 then edma 0,32,fb+vs&(4)*sl+576,$51520: goto 3340
+ 3332 if vf&(5)>0 then edma 0,24,fb+vf&(5)*sl+2040,$51520: goto 3340
+ 3340 if vs&(9)>0 then edma 0,32,fb+vs&(9)*sl+608,$51640: goto 3350
+ 3342 if vf&(10)>0 then edma 0,24,fb+vf&(10)*sl+2016,$51640: goto 3350
+ 3344 if vf&(10)>0 then edma 0,24,fb+vf&(10)*sl+2040,$516a0
+ 3350 if vf&(14)>0 then edma 0,24, fb+vf&(14)*sl+2016,$51580
+ 3352 if vf&(14)>0 then edma 0,24, fb+vf&(14)*sl+2040,$515e0
+ 3660 return
+ 3700 rem ----draw screen border----
+ 3710 for i=0to39: c@&(i,0)=8:t@&(i,0)=78: nexti
+ 3720 for i=0to39: c@&(i,24)=8:t@&(i,24)=77: nexti
+ 3730 for i=1to23: c@&(0,i)=8:t@&(0,i)=78: nexti
+ 3740 for i=1to23: c@&(39,i)=8:t@&(39,i)=77: nexti
+ 3750 for i=1to39: c@&(i,15)=8:t@&(i,15)=78: nexti
+ 3760 for i=1to14: c@&(15,i)=8:t@&(15,i)=78: nexti
+ 3990 return
+ 4998 rem ---lookup table of visible cells---
+ 4999 rem delta fx,fy,sx,sy
+ 5000 rem direction=1 (fronts,sides)
+ 5001 data -1, 0,-1, 0
+ 5002 data -1,-1,-1,-1
+ 5003 data -1,-2,-1,-2
+ 5004 data -1,-3,-1,-3
+ 5005 data -1,-4,-1,-4
+ 5006 data  1, 0, 0, 0
+ 5007 data  1,-1, 0,-1
+ 5008 data  1,-2, 0,-2
+ 5009 data  1,-3, 0,-3
+ 5010 data  1,-4, 0,-4
+ 5011 data  0,-1, 0,-1
+ 5012 data  0,-2, 0,-2
+ 5013 data  0,-3, 0,-3
+ 5014 data  0,-4, 0,-4
+ 5015 data -2,-4,-2,-4
+ 5016 data  2,-4, 1,-4
+ 5017 data -2,-3,-2,-3
+ 5018 data  2,-3, 1,-3
+ 5020 rem direction=2 (sides view first, fronts view next)
+ 5021 data  0,-1,-1,-1
+ 5022 data  1,-1, 0,-1
+ 5023 data  2,-1, 1,-1
+ 5024 data  3,-1, 2,-1
+ 5025 data  4,-1, 3,-1
+ 5026 data  0, 0,-1, 1
+ 5027 data  1, 0, 0, 1
+ 5028 data  2, 0, 1, 1
+ 5029 data  3, 0, 2, 1
+ 5030 data  4, 0, 3, 1
+ 5031 data  0, 0, 0, 0
+ 5032 data  0, 0, 1, 0
+ 5033 data  0, 0, 2, 0
+ 5034 data  0, 0, 3, 0
+ 5035 data  4,-2, 3,-2
+ 5036 data  4, 1, 3, 2
+ 5037 data  3,-2, 2,-2
+ 5038 data  3, 1, 2, 2
+ 5040 rem direction=3  (fronts, sides)
+ 5041 data  1,-1, 0, 0
+ 5042 data  1, 0, 0, 1
+ 5043 data  1, 1, 0, 2
+ 5044 data  1, 2, 0, 3
+ 5045 data  1, 3, 0, 4
+ 5046 data -1,-1,-1, 0
+ 5047 data -1, 0,-1, 1
+ 5048 data -1, 1,-1, 2
+ 5049 data -1, 2,-1, 3
+ 5050 data -1, 3,-1, 4
+ 5051 data  0, 0, 0, 0
+ 5052 data  0, 1, 0, 0
+ 5053 data  0, 2, 0, 0
+ 5054 data  0, 3, 0, 0
+ 5055 data  2, 3, 1, 4
+ 5056 data -2, 3,-2, 4
+ 5057 data  2, 2, 1, 3
+ 5058 data -2, 2,-2, 3
+ 5060 rem direction=4 (sides, fronts)
+ 5061 data  0, 0, 0, 1
+ 5062 data -1, 0,-1, 1
+ 5063 data -2, 0,-2, 1
+ 5064 data -3, 0,-3, 1
+ 5065 data -4, 0,-4, 1
+ 5066 data  0,-1, 0,-1
+ 5067 data -1,-1,-1,-1
+ 5068 data -2,-1,-2,-1
+ 5069 data -3,-1,-3,-1
+ 5070 data -4,-1,-4,-1
+ 5071 data  0, 0,-1, 0
+ 5072 data  0, 0,-2, 0
+ 5073 data  0, 0,-3, 0
+ 5074 data  0, 0,-4, 0
+ 5075 data -4, 2,-4, 2
+ 5076 data -4,-2,-4,-2
+ 5077 data -3, 2,-3, 2
+ 5078 data -3,-2,-3,-2
+ 5100 rem ------evaluate the special cells------
+ 5110 window 2,16,37,23:cursor 0,7
+ 5111 if sp&(px,py)=0 then scnclr: goto 5998 :rem not special, clear window
+ 5112 rem play "3ged": can be replaced with a 'sound' command effect later
+ 5113 if mp$="map01"and px=8 and py=8 then print "someone has broke the lock of the   door. maybe we should check who's   inside."
+ 5115 if mp$="map01" and px=14 and py=10 then gosub 7000:rem the camp
+ 5998 window 0,0,39,24
+ 5999 return
+ 6000 window 17,3,37,14
+ 6010 cursor 0,0: print "at:   {left}{left}{left}" at%
+ 6020 cursor 0,1: print "de:   {left}{left}{left}" de%
+ 6030 cursor 0,2: print "st:   {left}{left}{left}" st%
+ 6040 cursor 0,4: print "{lgrn}i{wht}nventory"
+ 6050 cursor 0,5: print "{lgrn}q{wht}uest log"
+ 6060 cursor 0,6: print "{lgrn}e{wht}xit game"
+ 6099 window 0,0,39,24
+ 6100 return
+ 6499 rem -----level data------
+ 6999 rem ----the camp----
+ 7000 window 2,16,37,23:cursor 0,7
+ 7005 edma 0,1152,$801fb80+1*$480,$51380
+ 7010 print "you are at the camp of adventurers. you can rest here and share your    stories with fellow travellers."
+ 7020 window 17,3,37,14
+ 7030 scnclr
+ 7040 print"{lgrn}l{wht}oad game":print"{lgrn}c{wht}reate character"
+ 7042 if len(na$)>1 then print"{lgrn}r{wht}est":print"{lgrn}s{wht}ave game":print"exit to {lgrn}w{wht}ilderness"
+ 7044 print"{lgrn}e{wht}xit game"
+ 7050 get a$
+ 7051 gosub 20700
+ 7060 if a$="c" then gosub 7500: rem create character
+ 7065 ifa$="e"thengosub2000
+ 7070 if len(na$)>0 and a$="w" then 7760
+ 7400 goto 7050
+ 7499 rem ---create character---
+ 7500 scnclr
+ 7510 at%=(rnd(0)*6)+7
+ 7520 de%=(rnd(0)*6)+7
+ 7530 st%=(rnd(0)*6)*2+12
+ 7540 print"attack:"at%
+ 7550 print"defense:"de%
+ 7560 print"strength:"st%
+ 7570 print"{down}{down}{down}{lgrn}r{wht}e-roll":print"{lgrn}k{wht}eep":print"{lgrn}_{wht}back"
+ 7580 gosub 20700
+ 7582 if a$=chr$(95) then 7030:rem back
+ 7585 if a$="r" then 7500:rem reroll
+ 7590 if a$="k" then cursor 0,7:print"       ":print"     ":goto 7610
+ 7600 goto 7580
+ 7610 cursor 0,6:print"       ":print"       ":print"       "
+ 7612 na$=""
+ 7615 cursor 0,4:print"name:                 "
+ 7620 gosub 20700
+ 7625 if a$=chr$(13) and len(na$)>0 then 7700:rem return
+ 7627 if a$=chr$(20) then na$=left$(na$,abs(len(na$)-1)):goto 7632:rem del
+ 7630 if len(na$)<16 and(asc(a$)>64 and asc(a$)<91) or asc(a$)=32 then na$=na$+a$:rem only letters accepted
+ 7632 cursor0,4:print"                     ":print"{up}name:" na$
+ 7640 goto 7620
+ 7700 cursor 0,7:print"{lgrn}k{wht}eep"
+ 7710 print"{lgrn}_{wht}back"
+ 7720 gosub 20700
+ 7730 if a$=chr$(95) then 7610 :rem back
+ 7740 if a$="k" then 7030: rem character completed
+ 7750 goto 7720
+ 7760 px=13:py=10:window 17,3,37,14:scnclr
+ 7765 gosub 3000
+ 7766 gosub 6000
+ 7770 return: rem exit from camp
+ 7799 rem ----wandering monster----
+ 7800 window 2,16,37,23:cursor 0,7
+ 7810 restore(7999+int(rnd(0)*3)+1)
+ 7812 restore(7999+int(rnd(0)*3)+1)
+ 7820 readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$
+ 7830 if ml%>mn-1 and ml%<mx+1 then return
+ 7900 goto 7812
+ 7999 rem --- monsters data --pic,lvl,att,def,str,xp,name,gold,items,attack
+ 8000 data1,2,9,5,9,10,"wild boar",0,0,"tusks"
+ 8001 data2,1,7,5,5,5,"goblin",3,0,"sword"
+ 8002 data3,1,7,6,5,6,"wolf",0,0,"teeth"
+ 8199 rem ---combat---
+ 8200 window 2,16,37,23:cursor0,7
+ 8205 edma 0,1152,$802fb80+mp%*$480,$51380
+ 8210 print"you met a "mo$"."
+ 8212 print"do you want to {grn}f{wht}ight or {grn}r{wht}un away?"
+ 8220 gosub 20700
+ 8230 ifa$="r"then8250
+ 8235 ifa$="f"then8300
+ 8240 goto8220
+ 8249 rem-----run-----
+ 8250 if(int(rnd(0)*12)+1+de%)<(int(rnd(0))*12+1+ma%)thenst%=st%-2:print"you run but the "mo$" wounds you with it's "ma$".":return
+ 8260 print"you managed to run away.":gosub3000:return
+ 8299 rem----player attack----
+ 8300 ifint(rnd(0)*12)+1+at%>=int(rnd(0)*12)+1+md%then begin:ms%=ms%-2:print"you hit the "mo$:print" with your sword."ms%
+ 8305 bend:else begin:print"you try to hit the "mo$:print" with your sword but fail."ms%:bend
+ 8307 sleep(0.5)
+ 8310 ifms%<1thenprint"the "mo$" dies.":sleep(0.50):goto8400
+ 8319 rem----monster attack----
+ 8320 ifint(rnd(0)*12)+1+de%<int(rnd(0)*12)+1+ma%then begin:st%=st%-2:print"the "mo$" wounds you with it's "ma$"."
+ 8322 bend:else print"the "mo$" tries to wound you with it's "ma$",but fails."
+ 8324 sleep(0.5)
+ 8330 gosub6000:window2,16,37,23:cursor0,7
+ 8335 ifms%>1orst%>1then8212
+ 8340 ifst%<1thenprint"you've been killed by a "mo$"."
+ 8400 gosub3000:return
+ 8499 rem -----inventory-----
+ 8500 window 17,3,37,14:scnclr
+ 8505 for i=0to9:printi:next
+ 8510 print"{lgrn}_{wht}back"
+ 8600 gosub 20700:rem getkey + poll music
+ 8610 if a$="_"then8799
+ 8780 goto 8600
+ 8799 scnclr:return
+ 8999 rem------your adventure ends here------
+ 9000 screen 0,320,200,5
+ 9010 char 8,64,1,1,2,"Your adventure ends here."
+ 9020 char 2,80,1,1,2,"Press e to exit or any other to restart."
+ 9030 gosub 20700
+ 9035 if a$="e" then screen close: goto 2005
+ 9040 screen close
+ 9050 goto 150
+ 9198 rem ------inventory objects data-------
+ 9199 rem id,name,description
+ 9200 data1,"longsword","a sharp longsword made of the finest steel"
+ 9201 data2,"pipeweed","dried tobacco leaves"
+ 9203 data3,"amulet","an amulet of an ainceent god"
+ 9204 data4,"red potion","a small bottle filled with red liquid"
+ 9300 rem -----------------------------------
+20000 rem *** init music vars ***
+20010 dim v1$(6):dim v2$(6):dim v3$(6):dim v4$(6):dim v5$(6):dim v6$(6)
+20020 t=0:rem music chunk index
+20030 tt=0:rem bar index
+20040 dim m(13)
+20050 m(0)= 0:m(1)= 0:m(2)= 1:m(3)= 1:m(4)= 2:m(5)= 2:m(6)= 3:m(7)= 3
+20060 m(8)= 4:m(9)= 4:m(10)= 5:m(11)= 5:m(12)=-3:m(13)= 0
+20070 v1$(0)="t6 o2 q c g g o1 #a o2 f f #d #a o3 #d f o2 a a o3 #d c o2 #d o3 d o2 b d o3 c o2 f #d h.c"
+20080 v2$(0)="t8 o2 h.c o1 .#a o1 .#d .f .#g .#a o2 .c o1 .c"
+20090 v3$(0)=""
+20100 v4$(0)="t6 o2 ir q#d o3 c o2 #d d #a d g g #a o3 c o2 f o3 c d o2 g g o3 c o2 g g g g ig h.g"
+20110 v5$(0)="t8 o2 h.c o1 .#a o1 .#d .f .#g .#a o2 .c o1 .c"
+20120 v6$(0)=""
+20130 v1$(1)="t6 o2 q c g g o1 #a o2 f f #d #a o3 #d f o2 a a o3 #d c o2 #d o3 d o2 b d o3 c o2 f #d h.c"
+20140 v2$(1)="t8 o1 h.c o0 .#a o1 .#d .f .#g .#a o2 .c o1 .c"
+20150 v3$(1)="t6m3 o5 q g f i#d sc#d q. d o5i #a sf#a if o5 q g f ic o4 s#ao5c o4 q.a io5fqg  o5 q.#g if c o4 i#a o5 #a f qd #a o6 q.c sdc o5ib g o6q.c o5icd#d"
+20160 v4$(1)="t6 o2 ir q#d o3 c o2 #d d #a d g g #a o3 c o2 f o3 c d o2 g g o3 c o2 g g g g ig h.g"
+20170 v5$(1)="t8 o1 h.c o0 .#a o1 .#d .f .#g .#a o2 .c o1 .c"
+20180 v6$(1)=""
+20190 v1$(2)="t6 o2 q c g g   o1 g o2d d  #d #a #a  o1#a o2 f f  c g g  o1#a o2 f f e o3c c  o2h.c"
+20200 v2$(2)="t8 o1 h.c .g .#d .#a o2 .c o1 .#a .e .c"
+20210 v3$(2)="t6 m3 o5 i#d f qg hr o4ig#g q#a hr o5 id#d qf hr o6ico5g#fg#dg q.d s#dd ic o4b o5q.e sfe idg h.e"
+20220 v4$(2)="t6 o2 ir q#d o3 c o2 #d  o1#a o2g o1#a  o2g o3#d o2g  d #a d  #d o3 c o2 #d  d #a d g o3e io2g h.g"
+20230 v5$(2)="t8 o1 h.c .g .#d .#a o2 .c o1 .#a .e .c"
+20240 v6$(2)="t6 m3 o5 hr icd q#d hr o5ig#g q#a hr o4 i#ao5c qd o5ig#dc#do4bo5#d o4q.#a so5co4#a ia g o5 q.c sdc io4bo5d h.c"
+20250 v1$(3)="t6 o2 q c g g o1 #a o2 f f #d #a o3 #d f o2 a a o3 #d c o2 #d o3 d o2 b d o3 c o2 f #d h.c"
+20260 v2$(3)="t8 o2 h.c o1 .#a o1 .#d .f .#g .#a o2 .c o1 .c"
+20270 v3$(3)="t2m0 o5 q c igcg#g #a#g qg #d  ig#ag#dc o4#a q.a o5ifo4ao5f  o4q#g o5i#ggf#d q.d s#dd ic o4#a qo5c io6co5g#dd h.c"
+20280 v4$(3)="t6 o2 ir q#d o3 c o2 #d d #a d g g #a o3 c o2 f o3 c d o2 g g o3 c o2 g g g g ig h.g"
+20290 v5$(3)="t8 o2 h.c o1 .#a o1 .#d .f .#g .#a o2 .c o1 .c"
+20300 v6$(3)="t2m0 o5 q #d io6co5#do6cd#dd qc o5g  o6icdco5#agf q.#d i#a#d#a  o5qc o6ico5#a#gg q.f sgf i#dd q#d  io6#d d c o5 g h.#d"
+20310 v1$(4)="t6 o2 q c g g o1 #a o2 f f #d #a o3 #d f o2 a a o3 #d c o2 #d o3 d o2 b d o3 c o2 f #d h.c"
+20320 v2$(4)="t8 o1 h.c o0 .#a o1 .#d .f .#g .#a o2 .c o1 .c"
+20330 v3$(4)="t7m3 o5 q g f i#d sc#d q. d o5i #a sf#a if o5 q g f ic o4 s#ao5c o4 q.a io5fqg  o5 q.#g if c o4 i#a o5 #a f qd #a o6 q.c sdc o5ib g o6q.c o5icd#d"
+20340 v4$(4)="t6 o2 ir q#d o3 c o2 #d d #a d g g #a o3 c o2 f o3 c d o2 g g o3 c o2 g g g g ig h.g"
+20350 v5$(4)="t8 o1 h.c o0 .#a o1 .#d .f .#g .#a o2 .c o1 .c"
+20360 v6$(4)="t7p0m0 o6 qc o5#a ig sfg q.f o6id so5#ao6d io5#a  o6q#d id#ddc q.f ico5ao6c o6i#ddco5g#dd o6dco5bgdo4b o6co5g#dg#dd h.c"
+20370 v1$(5)="t6 o2 q c g g   o1 g o2d d  #d #a #a  o1#a o2 f f  c g g  o1#a o2 f f e o3c c  o2h.c"
+20380 v2$(5)="t8 o1 h.c .g .#d .#a o2 .c o1 .#a .e .c"
+20390 v3$(5)="t7 m3 o5 i#d f qg hr o4ig#g q#a hr o5 id#d qf hr o6ico5g#fg#dg q.d s#dd ic o4b o5q.e sfe idg h.e"
+20400 v4$(5)="t6 o2 ir q#d o3 c o2 #d  o1#a o2g o1#a  o2g o3#d o2g  d #a d  #d o3 c o2 #d  d #a d g o3e io2g h.g"
+20410 v5$(5)="t8 o1 h.c .g .#d .#a o2 .c o1 .#a .e .c"
+20420 v6$(5)="t7 m3 o5 hr icd q#d hr o5ig#g q#a hr o4 i#ao5c qd o5ig#dc#do4bo5#d o4q.#a so5co4#a ia g o5 q.c sdc io4bo5d h.c"
+20430 envelope 0 , 0 , 9 , 0 , 0
+20440 envelope 1 , 12 , 0 , 12 , 0
+20450 envelope 2 , 2 , 6 , 0 , 0
+20460 envelope 3 , 0 , 5 , 5 , 0
+20470 envelope 4 , 9 , 4 , 4 , 0
+20480 envelope 5 , 0 , 9 , 2 , 1
+20490 envelope 6 , 0 , 11 , 0 , 0
+20500 envelope 7 , 0 , 12 , 0 , 0
+20510 envelope 8 , 3 , 13 , 0 , 1
+20520 envelope 9 , 0 , 9 , 0 , 0
+20530 return
+20540 rem *** poll for playing of next song chunk
+20550 if rplay(1)ormu=0then return
+20560 t = m(tt) : rem musicandchunkandindex = mapandbarandtoandchunk(barandindex)
+20570 play v1$(t), v2$(t), v3$(t), v4$(t), v5$(t), v6$(t)
+20580 tt=tt+1
+20590 if m(tt) = -3 then tt = 0
+20600 return
+20700 rem *** getkey + poll music ***
+20710 do
+20720 gosub 20540
+20730 get a$
+20740 loop until a$ <>""
+20750 return
