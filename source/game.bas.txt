@@ -1,15 +1,12 @@
    10 rem to do:
-   20 rem start screen graphics
-   30 rem start screen options
-   40 rem character generation
-   50 rem monsters
-   51 restore 5040
+   20 rem inventory
    70 rem npcs
    80 rem quests
    90 rem victory
   100 rem battle
   110 rem --------------------
   120 rem initialization
+  121 mu=1:rem music on-off
   122 gosub 20000:rem init music
   125 mem 1,3: graphic clr: rem reserve screen memory for charset
   126 n$="10.chr": d8=peek($d068): d9=peek($d069): da=peek($d06a)
@@ -22,7 +19,7 @@
   148 dim vf&(18): rem view of front of cells
   150 di=1 :rem direction of player 1n 2e 3s 4w
   160 px=14:py=10: rem player coordinates
-  165 mp$="map01":wm%=15:mn=1:mx=2:rem default map, chance of wandering monster, monster level min-max
+  165 mp$="map01":wm%=7:mn=1:mx=2:rem default map, chance of wandering monster, monster level min-max
   499 rem start screen
   500 border 0: background 11
   505 screen 0,320,200,4 :rem 16 colours
@@ -30,13 +27,14 @@
   520 screen set 0,1
   530 rem load graphics
   540 loadiff"titlescreen.iff"
-  541 gosub 20540:rem start playing music
-  542 screen set 0,0:sleep 1:loadiff"titletext.iff"
-  543 pen 8
+  541 rem gosub 20540:rem start playing music - moved this lower to avoid lag during load
+  542 screen set 0,0:loadiff"titletext.iff"
+  543 pen 14
   545 rem char 7,8,2,1,2,"The Thing of a Bad Thing"
   546 rem char 6,40,1,1,2,"A Role-Playing Game Engine"
   547 rem char 16,30,1,1,2,"- ~ -"
-  548 char 5,178,1,1,2,"Code and Gfx by Gabor Lipcsei"
+  548 char 5,176,1,1,2,"Code and Gfx by Gabor Lipcsei"
+  549 char 7,184,1,1,2,"Music by Gurce Isikyildiz"
   555 bload"bgnd01",p($8000000)
   560 bload"16wallsatt",p($8000810)
   565 bload"spec01",p($8020000)
@@ -44,6 +42,7 @@
   570 rem
   599 rem start screen options
   600 char 12,192,1,1,2,"Press any key"
+  670 gosub 20540:rem start playing music
   680 gosub 20700:rem getkey + poll music
   699 rem load grid--------------------------
   700 screen close 1:screen close 0 :scnclr:print"{wht}"
@@ -89,7 +88,10 @@
  1630 if px=21 then px=1
  1640 if di=5 then di=1
  1650 if di=0 then di=4
- 1660 if a$=chr$(81)thengosub2000: rem quit
+ 1660 if a$="e"thengosub2000: rem exit
+ 1670 if a$="i"thengosub8500
+ 1680 if a$="m"andmu=1thenmu=1-mu:play:goto1500
+ 1682 if a$="m"andmu=0thenmu=1-mu:gosub20430:goto1500
  1900 goto1000
  1999 rem -----------end of main loop--------------
  2000 window2,16,37,23
@@ -311,6 +313,9 @@
  6010 cursor 0,0: print "at:   {left}{left}{left}" at%
  6020 cursor 0,1: print "de:   {left}{left}{left}" de%
  6030 cursor 0,2: print "st:   {left}{left}{left}" st%
+ 6040 cursor 0,4: print "{lgrn}i{wht}nventory"
+ 6050 cursor 0,5: print "{lgrn}q{wht}uest log"
+ 6060 cursor 0,6: print "{lgrn}e{wht}xit game"
  6099 window 0,0,39,24
  6100 return
  6499 rem -----level data------
@@ -320,13 +325,14 @@
  7010 print "you are at the camp of adventurers. you can rest here and share your    stories with fellow travellers."
  7020 window 17,3,37,14
  7030 scnclr
- 7040 print"{lgrn}l{wht}oad game":print"{lgrn}c{wht}reate character"ter
- 7042 if len(na$)>1 then print"{lgrn}r{wht}est":print"{lgrn}s{wht}ave game":print"{lgrn}e{wht}xit to wilderness"
- 7044 print"{lgrn}q{wht}uit game"
+ 7040 print"{lgrn}l{wht}oad game":print"{lgrn}c{wht}reate character"
+ 7042 if len(na$)>1 then print"{lgrn}r{wht}est":print"{lgrn}s{wht}ave game":print"exit to {lgrn}w{wht}ilderness"
+ 7044 print"{lgrn}e{wht}xit game"
  7050 get a$
+ 7051 gosub 20700
  7060 if a$="c" then gosub 7500: rem create character
- 7065 ifa$="q"thengosub2000
- 7070 if len(na$)>0 and a$="e" then 7760
+ 7065 ifa$="e"thengosub2000
+ 7070 if len(na$)>0 and a$="w" then 7760
  7400 goto 7050
  7499 rem ---create character---
  7500 scnclr
@@ -383,7 +389,7 @@
  8240 goto8220
  8249 rem-----run-----
  8250 if(int(rnd(0)*12)+1+de%)<(int(rnd(0))*12+1+ma%)thenst%=st%-2:print"you run but the "mo$" wounds you with it's "ma$".":return
- 8260 print"you managed to run away.":return
+ 8260 print"you managed to run away.":gosub3000:return
  8299 rem----player attack----
  8300 ifint(rnd(0)*12)+1+at%>=int(rnd(0)*12)+1+md%then begin:ms%=ms%-2:print"you hit the "mo$:print" with your sword."ms%
  8305 bend:else begin:print"you try to hit the "mo$:print" with your sword but fail."ms%:bend
@@ -396,15 +402,30 @@
  8330 gosub6000:window2,16,37,23:cursor0,7
  8335 ifms%>1orst%>1then8212
  8340 ifst%<1thenprint"you've been killed by a "mo$"."
- 8400 return
+ 8400 gosub3000:return
+ 8499 rem -----inventory-----
+ 8500 window 17,3,37,14:scnclr
+ 8505 for i=0to9:printi:next
+ 8510 print"{lgrn}_{wht}back"
+ 8600 gosub 20700:rem getkey + poll music
+ 8610 if a$="_"then8799
+ 8780 goto 8600
+ 8799 scnclr:return
  8999 rem------your adventure ends here------
  9000 screen 0,320,200,5
  9010 char 8,64,1,1,2,"Your adventure ends here."
- 9020 char 2,80,1,1,2,"Press q to quit or any other to restart."
+ 9020 char 2,80,1,1,2,"Press e to exit or any other to restart."
  9030 gosub 20700
- 9035 if a$="q" then screen close: goto 2005
+ 9035 if a$="e" then screen close: goto 2005
  9040 screen close
  9050 goto 150
+ 9198 rem ------inventory objects data-------
+ 9199 rem id,name,description
+ 9200 data1,"longsword","a sharp longsword made of the finest steel"
+ 9201 data2,"pipeweed","dried tobacco leaves"
+ 9203 data3,"amulet","an amulet of an ainceent god"
+ 9204 data4,"red potion","a small bottle filled with red liquid"
+ 9300 rem -----------------------------------
 20000 rem *** init music vars ***
 20010 dim v1$(6):dim v2$(6):dim v3$(6):dim v4$(6):dim v5$(6):dim v6$(6)
 20020 t=0:rem music chunk index
@@ -460,7 +481,7 @@
 20520 envelope 9 , 0 , 9 , 0 , 0
 20530 return
 20540 rem *** poll for playing of next song chunk
-20550 if rplay(1) then return
+20550 if rplay(1)ormu=0then return
 20560 t = m(tt) : rem musicandchunkandindex = mapandbarandtoandchunk(barandindex)
 20570 play v1$(t), v2$(t), v3$(t), v4$(t), v5$(t), v6$(t)
 20580 tt=tt+1
