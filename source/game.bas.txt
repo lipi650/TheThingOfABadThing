@@ -15,6 +15,7 @@
   140 dim sp&(20,20):rem special cells
   142 dim fr&(20,20):dim si&(20,20):rem fronts and sides of map cells
   144 dim ox(16): dim oy(16): rem object locations (with 16 objects defined)
+  145 dim pi%(10):rem player inventory
   146 dim vs&(18): rem view of side of cells
   148 dim vf&(18): rem view of front of cells
   161 lv=1:rem starting level
@@ -93,6 +94,7 @@
  1670 if a$="i"thengosub8500
  1680 if a$="m"andmu=1thenmu=1-mu:play:goto1500
  1682 if a$="m"andmu=0thenmu=1-mu:gosub20430:goto1500
+ 1683 if a$="t"then rem gosub
  1900 goto1000
  1999 rem -----------end of main loop--------------
  2000 window2,16,37,23
@@ -409,8 +411,15 @@
  8400 gosub3000:return
  8499 rem -----inventory-----
  8500 window 17,3,37,14:scnclr
- 8505 for i=0to9:printi:next
- 8510 print"{lgrn}_{wht}back"
+ 8505 for i=0to9
+ 8506 j=0
+ 8507 restore 9200:do
+ 8508 read oi,ol,n,m,oj$,od$,oe,ou,oa,od,os
+ 8509  if oi=pi(i) thenprinti oj$
+ 8510  if oi<>0 then j=j+1:goto8508
+ 8519 loop until oi=0
+ 8520 nexti
+ 8521 print"{lgrn}_{wht}back"
  8600 gosub 20700:rem getkey + poll music
  8610 if a$="_"then8799
  8780 goto 8600
@@ -431,8 +440,10 @@
  9201 data2,1, 0, 0,"pipeweed","dried tobacco leaves",0,0,0,0,0
  9203 data3,1,13, 9,"amulet","an amulet of an ainceent god",4,0,0,1,0
  9204 data4,1,13, 9,"red potion","a small bottle filled with red liquid",0,1,0,0,24
- 9210 data0,0,0,0,"","",0,0,0,0,0:rem end of objects
- 9300 rem -----------------------------------
+ 9210 data0,0,0,0,"empty","",0,0,0,0,0:rem end of objects
+ 9298 rem -----------------------------------
+ 9299 rem ---take object-------
+ 9300 window17,3,37,14:scnclr
  9399 rem ----read level data----
  9400 read mp$,wm%,mn,mx,px,py,di
  9410 return
