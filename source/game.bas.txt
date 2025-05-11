@@ -94,7 +94,7 @@
  1670 if a$="i"thengosub8500
  1680 if a$="m"andmu=1thenmu=1-mu:play:goto1500
  1682 if a$="m"andmu=0thenmu=1-mu:gosub20430:goto1500
- 1683 if a$="t"then rem gosub
+ 1683 if a$="t"then gosub 9300
  1900 goto1000
  1999 rem -----------end of main loop--------------
  2000 window2,16,37,23
@@ -444,6 +444,26 @@
  9298 rem -----------------------------------
  9299 rem ---take object-------
  9300 window17,3,37,14:scnclr
+ 9302 window2,16,37,23:scnclr
+ 9305 restore 9200:do
+ 9310 read oi,ol,n,m,oj$,od$,oe,ou,oa,od,os
+ 9311 if oi=0 then return
+ 9312 if ox(oi)<>px and oy(oi)<>py then 9310
+ 9315 if n=px and m=py then cursor0,7:print oj$": {lgrn}t{wht}ake / {lgrn}l{wht}eave":gosub20700
+ 9320 if a$="l"then print"ok.":sleep1:goto 9310
+ 9322 if a$="t"then begin
+ 9325  gosub 9340
+ 9326  if j=10 then print"you cannot carry more":sleep 1:return
+ 9327  pi(j)=oi:ox(oi)=0:oy(oi)=0:print"taken.":sleep1
+ 9328 bend:
+ 9329 goto 9310
+ 9330 return
+ 9339 rem ---check first empty slot---
+ 9340 for j=0to10
+ 9342 if j=10 then return
+ 9343 if pi(j)=0 then return
+ 9344 next j
+ 9398 return
  9399 rem ----read level data----
  9400 read mp$,wm%,mn,mx,px,py,di
  9410 return
