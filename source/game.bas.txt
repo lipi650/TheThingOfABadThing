@@ -219,12 +219,12 @@
  3352 if vf&(14)>0 then edma 0,24, fb+vf&(14)*sl+2040,$515e0
  3660 return
  3700 rem ----draw screen border----
- 3710 for i=0to39: c@&(i,0)=8:t@&(i,0)=78: nexti
- 3720 for i=0to39: c@&(i,24)=8:t@&(i,24)=78: nexti
- 3730 for i=1to23: c@&(0,i)=8:t@&(0,i)=77: nexti
- 3740 for i=1to23: c@&(39,i)=8:t@&(39,i)=77: nexti
- 3750 for i=1to38: c@&(i,15)=8:t@&(i,15)=78: nexti
- 3760 for i=1to14: c@&(15,i)=8:t@&(15,i)=77: nexti
+ 3710 for i=0to39: c@&(i,0)=5:t@&(i,0)=78: nexti
+ 3720 for i=0to39: c@&(i,24)=5:t@&(i,24)=78: nexti
+ 3730 for i=1to23: c@&(0,i)=5:t@&(0,i)=77: nexti
+ 3740 for i=1to23: c@&(39,i)=5:t@&(39,i)=77: nexti
+ 3750 for i=1to38: c@&(i,15)=5:t@&(i,15)=78: nexti
+ 3760 for i=1to14: c@&(15,i)=5:t@&(15,i)=77: nexti
  3770 t@&(0,0)=76: t@&(39,0)=75: t@&(0,24)=73 :t@&(39,24)=74
  3990 return
  4998 rem ---lookup table of visible cells---
@@ -314,13 +314,13 @@
  5998 window 0,0,39,24
  5999 return
  6000 window 17,3,37,14:scnclr
- 6010 cursor 0,0: print "at:   {left}{left}{left}" at%
- 6020 cursor 0,1: print "de:   {left}{left}{left}" de%
- 6030 cursor 0,2: print "st:   {left}{left}{left}" st%
- 6040 cursor 0,4: print "{lgrn}i{wht}nventory"
- 6050 cursor 0,5: print "{lgrn}q{wht}uest log"
- 6055 if ob=1thenprint"{lgrn}t{wht}ake object"
- 6060 cursor 0,7: print "{lgrn}e{wht}xit game"
+ 6010 cursor 0,0: print "G:   {left}{left}{left}" at%
+ 6020 cursor 0,1: print "{SHIFT-+}:   {left}{left}{left}" de%
+ 6030 cursor 0,2: print "S:   {left}{left}{left}" st%
+ 6040 cursor 0,4: print "{orng}i{wht}nventory"
+ 6050 cursor 0,5: print "{orng}q{wht}uest log"
+ 6055 if ob=1thenprint"{orng}t{wht}ake object"
+ 6060 cursor 0,7: print "{orng}e{wht}xit game"
  6099 window 0,0,39,24
  6100 return
  6498 rem -----level data------
@@ -332,9 +332,9 @@
  7010 print "you are at the camp of adventurers. you can rest here and share your    stories with fellow travellers."
  7020 window 17,3,37,14
  7030 scnclr
- 7040 print"{lgrn}l{wht}oad game":print"{lgrn}c{wht}reate character"
- 7042 if len(na$)>0 then print"{lgrn}r{wht}est":print"{lgrn}s{wht}ave game":print"exit to {lgrn}w{wht}ilderness"
- 7044 print"{lgrn}e{wht}xit game"
+ 7040 print"{orng}l{wht}oad game":print"{orng}c{wht}reate character"
+ 7042 if len(na$)>0 then print"{orng}r{wht}est":print"{orng}s{wht}ave game":print"exit to {orng}w{wht}ilderness"
+ 7044 print"{orng}e{wht}xit game"
  7050 get a$
  7051 gosub 20700
  7060 if a$="c" then gosub 7500: rem create character
@@ -346,10 +346,10 @@
  7510 at%=(rnd(0)*6)+7
  7520 de%=(rnd(0)*6)+7
  7530 st%=(rnd(0)*6)*2+12
- 7540 print"attack:"at%
- 7550 print"defense:"de%
+ 7540 print"attack  :"at%
+ 7550 print"defense :"de%
  7560 print"strength:"st%
- 7570 print"{down}{down}{down}{lgrn}r{wht}e-roll":print"{lgrn}k{wht}eep":print"{lgrn}_{wht}back"
+ 7570 print"{down}{down}{down}{orng}r{wht}e-roll":print"{orng}k{wht}eep":print"{orng}_{wht}back"
  7580 gosub 20700
  7582 if a$=chr$(95) then 7030:rem back
  7585 if a$="r" then 7500:rem reroll
@@ -364,8 +364,8 @@
  7630 if len(na$)<16 and(asc(a$)>64 and asc(a$)<91) or asc(a$)=32 then na$=na$+a$:rem only letters accepted
  7632 cursor0,4:print"                     ":print"{up}name:" na$
  7640 goto 7620
- 7700 cursor 0,7:print"{lgrn}k{wht}eep"
- 7710 print"{lgrn}_{wht}back"
+ 7700 cursor 0,7:print"{orng}k{wht}eep"
+ 7710 print"{orng}_{wht}back"
  7720 gosub 20700
  7730 if a$=chr$(95) then 7610 :rem back
  7740 if a$="k" then 7030: rem character completed
@@ -389,7 +389,7 @@
  8200 window 2,16,37,23:cursor0,7
  8205 edma 0,1152,$802fb80+mp%*$480,$51380
  8210 print"you met a "mo$"."
- 8212 print"do you want to {lgrn}f{wht}ight or {lgrn}r{wht}un away?"
+ 8212 print"do you want to {orng}f{wht}ight or {orng}r{wht}un away?"
  8220 gosub 20700
  8230 ifa$="r"then8250
  8235 ifa$="f"then8300
@@ -420,7 +420,7 @@
  8510  if oi<>0 then j=j+1:goto8508
  8519 loop until oi=0
  8520 nexti
- 8521 print"{lgrn}_{wht}back"
+ 8521 print"{orng}_{wht}back"
  8600 gosub 20700:rem getkey + poll music
  8610 if a$="_"then8799
  8780 goto 8600
@@ -450,7 +450,7 @@
  9310 read oi,ol,n,m,oj$,od$,oe,ou,oa,od,os
  9311 if oi=0 then return
  9312 if ox(oi)<>px and oy(oi)<>py then 9310
- 9315 if n=px and m=py then cursor0,7:print oj$": {lgrn}t{wht}ake / {lgrn}l{wht}eave":gosub20700
+ 9315 if n=px and m=py then cursor0,7:print oj$": {orng}t{wht}ake / {orng}l{wht}eave":gosub20700
  9320 if a$="l"then print"ok.":sleep1:goto 9310
  9322 if a$="t"then begin
  9325  gosub 9340
