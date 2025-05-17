@@ -9,7 +9,7 @@
   121 mu=1:rem music on-off
   122 gosub 20000:rem init music
   125 mem 1,3: graphic clr: rem reserve screen memory for charset
-  126 n$="10.chr": d8=peek($d068): d9=peek($d069): da=peek($d06a)
+  126 n$="toachr": d8=peek($d068): d9=peek($d069): da=peek($d06a)
   127 poke $d068,$00:poke $d069,$10:poke $d06a,$05
   128 bload (n$), p($51000)
   140 dim sp&(20,20):rem special cells
@@ -220,11 +220,12 @@
  3660 return
  3700 rem ----draw screen border----
  3710 for i=0to39: c@&(i,0)=8:t@&(i,0)=78: nexti
- 3720 for i=0to39: c@&(i,24)=8:t@&(i,24)=77: nexti
- 3730 for i=1to23: c@&(0,i)=8:t@&(0,i)=78: nexti
+ 3720 for i=0to39: c@&(i,24)=8:t@&(i,24)=78: nexti
+ 3730 for i=1to23: c@&(0,i)=8:t@&(0,i)=77: nexti
  3740 for i=1to23: c@&(39,i)=8:t@&(39,i)=77: nexti
- 3750 for i=1to39: c@&(i,15)=8:t@&(i,15)=78: nexti
- 3760 for i=1to14: c@&(15,i)=8:t@&(15,i)=78: nexti
+ 3750 for i=1to38: c@&(i,15)=8:t@&(i,15)=78: nexti
+ 3760 for i=1to14: c@&(15,i)=8:t@&(15,i)=77: nexti
+ 3770 t@&(0,0)=76: t@&(39,0)=75: t@&(0,24)=73 :t@&(39,24)=74
  3990 return
  4998 rem ---lookup table of visible cells---
  4999 rem delta fx,fy,sx,sy
@@ -453,7 +454,7 @@
  9320 if a$="l"then print"ok.":sleep1:goto 9310
  9322 if a$="t"then begin
  9325  gosub 9340
- 9326  if j=10 then print"you cannot carry more":sleep 1:return
+ 9326  if j=10 then print"you cannot carry more.":sleep 1:return
  9327  pi(j)=oi:ox(oi)=0:oy(oi)=0:print"taken.":sleep1
  9328 bend:
  9329 goto 9310
