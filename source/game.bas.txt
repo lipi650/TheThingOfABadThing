@@ -15,7 +15,7 @@
   140 dim sp&(20,20):rem special cells
   142 dim fr&(20,20):dim si&(20,20):rem fronts and sides of map cells
   144 dim ox(16): dim oy(16): rem object locations (with 16 objects defined)
-  145 dim pi%(10):rem player inventory
+  145 dim pi%(10,1):rem player inventory
   146 dim vs&(18): rem view of side of cells
   148 dim vf&(18): rem view of front of cells
   161 lv=1:rem starting level
@@ -416,14 +416,17 @@
  8506 j=0
  8507 restore 9200:do
  8508 read oi,ol,n,m,oj$,od$,oe,ou,oa,od,os
- 8509  if oi=pi(i) thenprinti oj$
- 8510  if oi<>0 then j=j+1:goto8508
+ 8509  if oi=pi(i,0) then printi oj$
+ 8510  if pi(i,1)>0 then print"{up}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}*"
+ 8512  if oi<>0 then j=j+1:goto8508
  8519 loop until oi=0
  8520 nexti
  8521 print"{orng}_{wht}back"
  8600 gosub 20700:rem getkey + poll music
  8610 if a$="_"then8799
- 8780 goto 8600
+ 8612 if asc(a$)>=48 and val(a$)<=57 then gosub 9800
+ 8614 if a$="back" then 8799
+ 8780 goto 8500
  8799 scnclr:return
  8999 rem------your adventure ends here------
  9000 screen 0,320,200,5
@@ -439,8 +442,8 @@
  9199 rem id,location lvl,x,y,name,description,equippable,useable,at,de,st
  9200 data1,1, 0, 0,"longsword","a sharp longsword made of the finest steel",1,0,0,0,0
  9201 data2,1, 0, 0,"pipeweed","dried tobacco leaves",0,0,0,0,0
- 9203 data3,1,13, 9,"amulet","an amulet of an ainceent god",4,0,0,1,0
- 9204 data4,1,13, 9,"red potion","a small bottle filled with red liquid",0,1,0,0,24
+ 9203 data3,1,13, 9,"amulet","an amulet of an ancient god",4,0,0,1,0
+ 9204 data4,1,13, 9,"red potion","a small bottle of red liquid",0,1,0,0,24
  9210 data0,0,0,0,"empty","",0,0,0,0,0:rem end of objects
  9298 rem -----------------------------------
  9299 rem ---take object-------
@@ -455,14 +458,14 @@
  9322 if a$="t"then begin
  9325  gosub 9340
  9326  if j=10 then print"you cannot carry more.":sleep 1:return
- 9327  pi(j)=oi:ox(oi)=0:oy(oi)=0:print"taken.":sleep1
+ 9327  pi(j,0)=oi:ox(oi)=0:oy(oi)=0:print"taken.":sleep1
  9328 bend:
  9329 goto 9310
  9330 return
  9339 rem ---check first empty slot---
  9340 for j=0to10
  9342 if j=10 then return
- 9343 if pi(j)=0 then return
+ 9343 if pi(j,0)=0 then return
  9344 next j
  9398 return
  9399 rem ----read level data----
@@ -481,8 +484,30 @@
  9710 read oi,ol,m,n,oj$,od$,oe,ou,oa,od,os
  9720 ox(oi)=m:oy(oi)=n
  9730 loop until oi=0
- 9740 rem -------------------------------------
- 9800 return
+ 9740 return
+ 9799 rem -----equip / use objects-----
+ 9800 i=val(a$)
+ 9805 window 2,16,37,23: scnclr: cursor 0,7
+ 9810 restore 9200
+ 9820 read oi,ol,m,n,oj$,od$,oe,ou,oa,od,os
+ 9830 if oi=pi(i,0) then print od$:goto 9850
+ 9840 goto 9820
+ 9850 window17,3,37,14: scnclr:print oj$
+ 9860 if oe>0 then print"{orng}e{wht}quip"
+ 9865 if ou>0 then print"{orng}u{wht}se"
+ 9870 print"{orng}_{wht}back"
+ 9875 gosub 20700
+ 9880 if a$="u" and ou=1 then gosub 11000: rem use
+ 9885 if a$="e" and oe>0 then gosub 12000: rem equip
+ 9887 if a$="_" or a$="back"then 9900
+ 9899 goto 9875
+ 9900 return
+10999 rem ------ use object ------
+11000 print "using": sleep 1
+11998 a$="back":return
+11999 rem ----- equip object -----
+12000 print "equip": sleep 1
+12999 a$="_":return
 20000 rem *** init music vars ***
 20010 dim v1$(6):dim v2$(6):dim v3$(6):dim v4$(6):dim v5$(6):dim v6$(6)
 20020 t=0:rem music chunk index
