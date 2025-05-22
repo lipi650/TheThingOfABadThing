@@ -18,6 +18,7 @@
   145 dim pi%(10,1):rem player inventory
   146 dim vs&(18): rem view of side of cells
   148 dim vf&(18): rem view of front of cells
+  149 dim at%(1): dim de%(1): dim st%(1): rem attack and defense initial and actual
   161 lv=1:rem starting level
   162 restore6499+lv
   165 gosub9400:rem read level data
@@ -46,6 +47,8 @@
   680 gosub 20700:rem getkey + poll music
   699 rem load grid--------------------------
   700 screen close 1:screen close 0 :scnclr:print"{wht}"
+  702 if rwindow(2)=80 then print chr$(27)+"x": rem switch to 40 columns
+  704 gosub 12500
   705 if rwindow(2)=80 then print chr$(27)+"x": rem switch to 40 columns
   706 gosub 3710
   707 fb=$8000000 :rem here begins the attic ram
@@ -73,7 +76,7 @@
  1005 gosub 6000:rem print player stats
  1010 gosub 5110: rem check special cells
  1020 if int(rnd(0)*100)+1<wm% then gosub 7800:rem wandering monster
- 1025 ifst%<1 then gosub 20700:goto 9000
+ 1025 ifst%(1)<1 then gosub 20700:goto 9000
  1030 ifml%>0thengosub8200:rem combat
  1500 gosub 20700
  1510 if a$=chr$(145) and(vf&(11)<9 and vf&(11)<>0) then 1560
@@ -168,6 +171,7 @@
  3230 rem --draw objects--
  3240 cm=gr&(cx,cy)
  3242 window 0,0,39,24
+ 3244 cursor 8-(len(md$)/2),14: print md$
  3245 cursor 25,0:print "   {left}{left}{left}"px:cursor 28,0:print "    {left}{left}{left}"py
  3247 rem
  3250 rem
@@ -311,12 +315,13 @@
  5112 rem play "3ged": can be replaced with a 'sound' command effect later
  5113 if mp$="map01"and px=8 and py=8 then print "someone has broke the lock of the   door. maybe we should check who's   inside."
  5115 if mp$="map01" and px=14 and py=10 then gosub 7000:rem the camp
+ 5120 if lv=1 and px<6 and py<9 then print"you feel dizzy.": di=int(rnd(0)*4)+1:gosub3000
  5998 window 0,0,39,24
  5999 return
  6000 window 17,3,37,14:scnclr
- 6010 cursor 0,0: print "G:   {left}{left}{left}" at%
- 6020 cursor 0,1: print "{SHIFT-+}:   {left}{left}{left}" de%
- 6030 cursor 0,2: print "S:   {left}{left}{left}" st%
+ 6010 cursor 0,0: print "G:   {left}{left}{left}" at%(1)
+ 6020 cursor 0,1: print "{SHIFT-+}:   {left}{left}{left}" de%(1)
+ 6030 cursor 0,2: print "S:   {left}{left}{left}" st%(1)
  6040 cursor 0,4: print "{orng}i{wht}nventory"
  6050 cursor 0,5: print "{orng}q{wht}uest log"
  6055 if ob=1thenprint"{orng}t{wht}ake object"
@@ -325,7 +330,7 @@
  6100 return
  6498 rem -----level data------
  6499 rem map,monster chance,monst.lvl.min,monst.lvl.max,px,py,di
- 6500 data"map01",7,1,2,14,10,4
+ 6500 data"map01","wilderness",7,1,2,14,10,4
  6999 rem ----the camp----
  7000 window 2,16,37,23:cursor 0,7
  7005 edma 0,1152,$801fb80+1*$480,$51380
@@ -343,12 +348,12 @@
  7400 goto 7050
  7499 rem ---create character---
  7500 scnclr
- 7510 at%=(rnd(0)*6)+7
- 7520 de%=(rnd(0)*6)+7
- 7530 st%=(rnd(0)*6)*2+12
- 7540 print"attack  :"at%
- 7550 print"defense :"de%
- 7560 print"strength:"st%
+ 7510 at%(0)=(rnd(0)*6)+7:at%(1)=at%(0)
+ 7520 de%(0)=(rnd(0)*6)+7:de%(1)=de%(0)
+ 7530 st%(0)=(rnd(0)*6)*2+12:st%(1)=st%(0)
+ 7540 print"attack  :"at%(0)
+ 7550 print"defense :"de%(0)
+ 7560 print"strength:"st%(0)
  7570 print"{down}{down}{down}{orng}r{wht}e-roll":print"{orng}k{wht}eep":print"{orng}_{wht}back"
  7580 gosub 20700
  7582 if a$=chr$(95) then 7030:rem back
@@ -395,20 +400,20 @@
  8235 ifa$="f"then8300
  8240 goto8220
  8249 rem-----run-----
- 8250 if(int(rnd(0)*12)+1+de%)<(int(rnd(0))*12+1+ma%)thenst%=st%-2:print"you run but the "mo$" wounds you with it's "ma$".":return
+ 8250 if(int(rnd(0)*12)+1+de%(1))<(int(rnd(0))*12+1+ma%)thenst%(1)=st%(1)-2:print"you run but the "mo$" wounds you with it's "ma$".":return
  8260 print"you managed to run away.":gosub3000:return
  8299 rem----player attack----
- 8300 ifint(rnd(0)*12)+1+at%>=int(rnd(0)*12)+1+md%then begin:ms%=ms%-2:print"you hit the "mo$:print" with your sword."ms%
+ 8300 ifint(rnd(0)*12)+1+at%(1)>=int(rnd(0)*12)+1+md%then begin:ms%=ms%-2:print"you hit the "mo$:print" with your sword."ms%
  8305 bend:else begin:print"you try to hit the "mo$:print" with your sword but fail."ms%:bend
  8307 sleep(0.5)
  8310 ifms%<1thenprint"the "mo$" dies.":sleep(0.50):goto8400
  8319 rem----monster attack----
- 8320 ifint(rnd(0)*12)+1+de%<int(rnd(0)*12)+1+ma%then begin:st%=st%-2:print"the "mo$" wounds you with it's "ma$"."
+ 8320 ifint(rnd(0)*12)+1+de%(1)<int(rnd(0)*12)+1+ma%then begin:st%(1)=st%(1)-2:print"the "mo$" wounds you with it's "ma$"."
  8322 bend:else print"the "mo$" tries to wound you with it's "ma$",but fails."
  8324 sleep(0.5)
  8330 gosub6000:window2,16,37,23:cursor0,7
- 8335 ifms%>1orst%>1then8212
- 8340 ifst%<1thenprint"you've been killed by a "mo$"."
+ 8335 ifms%>1orst%(1)>1then8212
+ 8340 ifst%(1)<1thenprint"you've been killed by a "mo$"."
  8400 gosub3000:return
  8499 rem -----inventory-----
  8500 window 17,3,37,14:scnclr
@@ -417,7 +422,7 @@
  8507 restore 9200:do
  8508 read oi,ol,n,m,oj$,od$,oe,ou,oa,od,os
  8509  if oi=pi(i,0) then printi oj$
- 8510  if pi(i,1)>0 then print"{up}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}*"
+ 8510  if pi(i,1)>0 then print"{up}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}*"
  8512  if oi<>0 then j=j+1:goto8508
  8519 loop until oi=0
  8520 nexti
@@ -469,7 +474,7 @@
  9344 next j
  9398 return
  9399 rem ----read level data----
- 9400 read mp$,wm%,mn,mx,px,py,di
+ 9400 read mp$,md$,wm%,mn,mx,px,py,di
  9410 return
  9499 rem ----check if any objects are here----
  9500 restore 9200
@@ -507,7 +512,40 @@
 11998 a$="back":return
 11999 rem ----- equip object -----
 12000 print "equip": sleep 1
-12999 a$="_":return
+12005 for j=0to9:pi(j,1)=0:nextj
+12010 pi(i,1)=oe:gosub 12110: rem recalculate bonuses
+12099 a$="_":return
+12100 rem ----equipment bonuses----
+12110 at%(1)=at%(0):de%(1)=de%(0)
+12115 for i=0to9
+12120 if pi(i,1)<0 then 12170
+12130  restore 9200
+12140  read oi,ol,m,n,oj$,od$,oe,ou,oa,od,os
+12145  if oi=0 then 12170
+12150  if pi(i,0)=oi then at%(1)=at%(1)+oa:de%(1)=de%(1)+od
+12165 goto 12140
+12170 nexti
+12190 return
+12499 rem -----intro------
+12500 for i=0to39:t@&(i,0)=78:c@&(i,0)=5:t@&(i,24)=78:c@&(i,24)=5:nexti
+12505 for i=0to24:t@&(0,i)=77:c@&(0,i)=5:t@&(39,i)=77:c@&(39,i)=5:nexti
+12510 t@&(0,0)=76:t@&(39,0)=75:t@&(39,24)=74:t@&(0,24)=73
+12512 window1,1,38,23
+12515 restore 21000:i=0:a$=""
+12520 read t$: if t$="_" then 12900
+12525 cursor0,i:color12:printt$:if a$="" then sleep 0.4:gosub 20540
+12530 cursor0,i:color15:printt$:if a$="" then sleep 0.4:gosub 20540
+12535 cursor0,i:color1:printt$:if a$="" then sleep 0.8:gosub 20540
+12540 if a$="" then get a$
+12542 i=i+1
+12545 ifi>23theni=23
+12547 goto 12520
+12900 sleep0.5
+12901 gosub 20540
+12902 get a$
+12903 if a$="" then 12901
+12905 scnclr:window0,0,39,24
+12999 return
 20000 rem *** init music vars ***
 20010 dim v1$(6):dim v2$(6):dim v3$(6):dim v4$(6):dim v5$(6):dim v6$(6)
 20020 t=0:rem music chunk index
@@ -575,3 +613,27 @@
 20730 get a$
 20740 loop until a$ <>""
 20750 return
+20999 rem --------intro story data-----------------
+21000 data"you've lived your whole life in"
+21005 data"tirnabrae, a quiet village far from"
+21010 data"trouble."
+21015 data"but this year, a harsh winter and wet"
+21020 data"spring have ruined the crops."
+21025 data"food is running low."
+21030 data"you leave your parents' home to seek"
+21035 data"work in the north, near the sea."
+21040 data"passing through coderath, you visit"
+21045 data"your uncle fintan, but your aunt aine"
+21050 data"greets you with worry."
+21070 data"- once peaceful and full of life, the"
+21075 data"forest now hides goblins, wild beasts,"
+21080 data"and travelers who vanish without a"
+21085 data"trace. - she says."
+21089 data" "
+21090 data"fintan left a week ago to explore what"
+21095 data"causes this sudden change, but he"
+21097 data"never returned."
+21100 data"you promise to find him."
+21105 data"you say farewell and step into"
+21110 data"the forest of peril."
+21115 data"_"
