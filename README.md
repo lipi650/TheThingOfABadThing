@@ -24,7 +24,7 @@ The project is not completed yet, it is in a WIP state.
   This is the new, improved version of the mapeditor tool.
 
 ## The MAP:
-  The map file contains the grid data of 20x20 Front and Side values (walls facing to the player and walls facing to the right) in the following order: (FR1,1, SI1,1, FR1,2, SI,2, FR1,3....SI20,1, FR2,1, SI2,1, FR3,1...)
+  The map file contains the grid data of 20x20 Front and Side values (walls facing to the player and walls facing to the right) and if the cell is "special" (can trigger custom events) in the following order: (FR1,1, SI1,1, SP1,1, FR1,2, SI1,2, SP1,2, FR1,3...., FR20,20, SI20,20, SP20,20)
 
       SI0,0    SI1,0    SI2,0
       |        |        |
@@ -40,10 +40,10 @@ The project is not completed yet, it is in a WIP state.
   - Create a map. You can use the MAPEDIT tool for it, but the current version only contains a few wall variations so it could be updated with more.
   - There is an other array which indicates if a cell is "Special": if the main program detects that the actual cell is "Special" it forks to evaulate and process it.
   - Create the dialogs / story / quests in the main loop of the program using BASIC.
-
+  - Objects are stored in DATA statements with indication if they are equipable or useable and if they give bonuses to the player stats
+    
 ## Plans for the future:
   - More wall types: city walls, dungeon walls etc.
-  - Adding a start screen graphics (in progress)
   - It would be nice to change the monochrome character mode to NCM (nibble colour mode) to have more colours once I learn how to do it, but at the moment the main priority is to complete the engine to have something playable.
   - NPC-s / shops and other special locations
   - Moving between different MAPs.
