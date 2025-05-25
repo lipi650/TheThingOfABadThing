@@ -31,14 +31,16 @@
   410 if t@&(cx*2+1,cy*2)=58 then t@&(cx*2+1,cy*2)=93 :goto 420: rem door-wall
   415 if t@&(cx*2+1,cy*2)=93 then t@&(cx*2+1,cy*2)=88 :goto 425: rem wall-tree
   420 if t@&(cx*2+1,cy*2)=88 then t@&(cx*2+1,cy*2)=3 : goto 450: rem tree-camp
-  425 if t@&(cx*2+1,cy*2)=3  then t@&(cx*2+1,cy*2)=96: goto 500: rem camp-empty
+  425 if t@&(cx*2+1,cy*2)=3  then t@&(cx*2+1,cy*2)=43: goto 500: rem camp-dead
+  426 if t@&(cx*2+1,cy*2)=43 then t@&(cx*2+1,cy*2)=96: goto 500: rem dead-empty
   450 rem
   500 if a$<>chr$(70) then 600 :rem change front
   505 if t@&(cx*2,cy*2+1)=96 then t@&(cx*2,cy*2+1)=35  :goto 515: rem empty-door
   510 if t@&(cx*2,cy*2+1)=35 then t@&(cx*2,cy*2+1)=67  :goto 520: rem door-wall
   515 if t@&(cx*2,cy*2+1)=67 then t@&(cx*2,cy*2+1)=88 :goto 525: rem wall-tree
   520 if t@&(cx*2,cy*2+1)=88 then t@&(cx*2,cy*2+1)=3 : goto 550: rem tree-camp
-  525 if t@&(cx*2,cy*2+1)=3  then t@&(cx*2,cy*2+1)=96: goto 600: rem camp-tree
+  525 if t@&(cx*2,cy*2+1)=3  then t@&(cx*2,cy*2+1)=43: goto 600: rem camp-dead
+  526 if t@&(cx*2,cy*2+1)=43 then t@&(cx*2,cy*2+1)=96: goto 600: rem dead-empty
   550 rem
   600 rem
   610 if a$=chr$(88) then gosub 2000 :rem load map
@@ -63,12 +65,14 @@
  2224 if fr$=chr$(1) then t@&(x*2,y*2+1)=67 :rem front wall
  2226 if fr$=chr$(2) then t@&(x*2,y*2+1)=88 :rem front tree
  2227 if fr$=chr$(10) then t@&(x*2,y*2+1)=3 :rem front camp
- 2228 if fr$=chr$(0) then t@&(x*2,y*2+1)=96 :rem front empty
+ 2228 if fr$=chr$(3) then t@&(x*2,y*2+1)=43 :rem front dead
+ 2229 if fr$=chr$(0) then t@&(x*2,y*2+1)=96 :rem front empty
  2322 if si$=chr$(9)then t@&(x*2+1,y*2)=58 :rem side door
  2324 if si$=chr$(1)then t@&(x*2+1,y*2)=93 :rem side wall
  2326 if si$=chr$(2)then t@&(x*2+1,y*2)=88 :rem side tree
  2327 if si$=chr$(10)then t@&(x*2+1,y*2)=3 :rem side camp
- 2328 if si$=chr$(0)then t@&(x*2+1,y*2)=96 :rem side empty
+ 2328 if si$=chr$(3)then t@&(x*2+1,y*2)=43 :rem side dead
+ 2329 if si$=chr$(0)then t@&(x*2+1,y*2)=96 :rem side empty
  2350 get#5,sp$
  2360 if sp$=chr$(1) then c@&(x*2,y*2)=2
  2365 if sp$=chr$(0) then c@&(x*2,y*2)=12
@@ -89,14 +93,16 @@
  3120 d=t@&(x*2,y*2+1)
  3122 if d=35 then da&=9 :rem door
  3124 if d=67 then da&=1 :rem wall
- 3126 if d=88 then da&=2 :rem tree
+ 3125 if d=88 then da&=2 :rem tree
+ 3126 if d=43 then da&=3 :rem dead
  3127 if d=3  then da&=10:rem camp
  3128 if d=96 then da&=0 :rem empty
  3129 fr$=chr$(da&): print#5,fr$;
  3130 d=t@&(x*2+1,y*2)
  3132 if d=58 then da&=9 :rem door
  3134 if d=93 then da&=1 :rem wall
- 3136 if d=88 then da&=2 :rem tree
+ 3135 if d=88 then da&=2 :rem tree
+ 3136 if d=43 then da&=3 :rem dead
  3137 if d=3  then da&=10:rem camp
  3138 if d=96 then da&=0 :rem empty
  3139 si$=chr$(da&): print#5,si$;

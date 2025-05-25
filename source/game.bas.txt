@@ -45,6 +45,7 @@
   600 char 12,192,1,1,2,"Press any key"
   670 gosub 20540:rem start playing music
   680 gosub 20700:rem getkey + poll music
+  685 pi(0,0)=4:pi(1,0)=1:pi(1,1)=1:rem default equipment
   699 rem load grid--------------------------
   700 screen close 1:screen close 0 :scnclr:print"{wht}"
   702 if rwindow(2)=80 then print chr$(27)+"x": rem switch to 40 columns
@@ -311,11 +312,13 @@
  5078 data -3,-2,-3,-2
  5100 rem ------evaluate the special cells------
  5110 window 2,16,37,23:cursor 0,7
- 5111 if sp&(px,py)=0 then 5998 :rem not special
- 5112 rem play "3ged": can be replaced with a 'sound' command effect later
+ 5111 if sp&(px,py)=0 then 5998 : rem border 0:rem not special
+ 5112 rem border 7
  5113 if mp$="map01"and px=8 and py=8 then print "someone has broke the lock of the   door. maybe we should check who's   inside."
- 5115 if mp$="map01" and px=14 and py=10 then gosub 7000:rem the camp
+ 5115 if mp$="map01" and px=13 and py=19 then gosub 7000:rem the camp
  5120 if lv=1 and px<6 and py<9 then print"you feel dizzy.": di=int(rnd(0)*4)+1:gosub3000
+ 5130 if lv=1 and px=11and py=20then print"i cannot go back to the village till i find fintan.": py=19:sleep 1:gosub3000
+ 5135 if lv=1 and px=14 and py=15 then print"you see a dead body leaning to a tree. you hope that fintan didn't meet the same fate."
  5998 window 0,0,39,24
  5999 return
  6000 window 17,3,37,14:scnclr
@@ -330,13 +333,14 @@
  6100 return
  6498 rem -----level data------
  6499 rem map,monster chance,monst.lvl.min,monst.lvl.max,px,py,di
- 6500 data"map01","wilderness",7,1,2,14,10,4
+ 6500 data"map01","wilderness",7,1,2,13,19,4
  6999 rem ----the camp----
  7000 window 2,16,37,23:cursor 0,7
  7005 edma 0,1152,$801fb80+1*$480,$51380
  7010 print "you are at the camp of adventurers. you can rest here and share your    stories with fellow travellers."
  7020 window 17,3,37,14
  7030 scnclr
+ 7035 gosub 12110: rem calculate bonuses
  7040 print"{orng}l{wht}oad game":print"{orng}c{wht}reate character"
  7042 if len(na$)>0 then print"{orng}r{wht}est":print"{orng}s{wht}ave game":print"exit to {orng}w{wht}ilderness"
  7044 print"{orng}e{wht}xit game"
@@ -375,7 +379,7 @@
  7730 if a$=chr$(95) then 7610 :rem back
  7740 if a$="k" then 7030: rem character completed
  7750 goto 7720
- 7760 px=13:py=10:window 17,3,37,14:scnclr
+ 7760 px=px-1:window 17,3,37,14:scnclr
  7765 gosub 3000
  7766 gosub 6000
  7770 return: rem exit from camp
@@ -421,8 +425,8 @@
  8506 j=0
  8507 restore 9200:do
  8508 read oi,ol,n,m,oj$,od$,oe,ou,oa,od,os
- 8509  if oi=pi(i,0) then printi oj$
- 8510  if pi(i,1)>0 then print"{up}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}*"
+ 8509  if oi=pi(i,0) then begin printi oj$
+ 8510  if pi(i,1)>0 then print"{up}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}{rght}*":bend
  8512  if oi<>0 then j=j+1:goto8508
  8519 loop until oi=0
  8520 nexti
@@ -445,10 +449,11 @@
  9197 rem ------inventory objects data-------
  9198 rem equippables: 1weapon,2armor,3helmet,4amulet,6ring,7shield,8boots
  9199 rem id,location lvl,x,y,name,description,equippable,useable,at,de,st
- 9200 data1,1, 0, 0,"longsword","a sharp longsword made of the finest steel",1,0,0,0,0
+ 9200 data1,1, 0, 0,"dirk","a narrow dagger with a keen edge",1,0,1,0,0
  9201 data2,1, 0, 0,"pipeweed","dried tobacco leaves",0,0,0,0,0
  9203 data3,1,13, 9,"amulet","an amulet of an ancient god",4,0,0,1,0
- 9204 data4,1,13, 9,"red potion","a small bottle of red liquid",0,1,0,0,24
+ 9204 data4,1,13, 9,"ash-baked scone","a scone baked in hearth ashes. your mother's gift for the road ahead",0,1,0,0,4
+ 9205 data5,1,14,15,"sword","a sword made of fine steel",1,0,2,0,0
  9210 data0,0,0,0,"empty","",0,0,0,0,0:rem end of objects
  9298 rem -----------------------------------
  9299 rem ---take object-------
@@ -492,7 +497,7 @@
  9740 return
  9799 rem -----equip / use objects-----
  9800 i=val(a$)
- 9805 window 2,16,37,23: scnclr: cursor 0,7
+ 9805 window 2,16,37,23:scnclr:cursor 0,7
  9810 restore 9200
  9820 read oi,ol,m,n,oj$,od$,oe,ou,oa,od,os
  9830 if oi=pi(i,0) then print od$:goto 9850
@@ -508,17 +513,23 @@
  9899 goto 9875
  9900 return
 10999 rem ------ use object ------
-11000 print "using": sleep 1
+11000 if pi(i,0)=4 then begin:st%(1)=st%(1)+os:pi(i,0)=0
+11005  if st%(1)>st%(0) then st%(1)=st%(0)
+11010 window2,16,37,23:cursor0,7:print"each bite stirs the memory of the warmth of home."
+11015 get a$:gosub20540
+11020 if a$="" then 11015:bend
 11998 a$="back":return
 11999 rem ----- equip object -----
 12000 print "equip": sleep 1
-12005 for j=0to9:pi(j,1)=0:nextj
-12010 pi(i,1)=oe:gosub 12110: rem recalculate bonuses
+12005 for j=0to9
+12007  if pi(j,1)=oe then pi(j,1)=0
+12008 nextj
+12010 pi(i,1)=oe: rem gosub 12110: rem recalculate bonuses
 12099 a$="_":return
 12100 rem ----equipment bonuses----
 12110 at%(1)=at%(0):de%(1)=de%(0)
 12115 for i=0to9
-12120 if pi(i,1)<0 then 12170
+12120 if pi(i,1)=0 then 12170
 12130  restore 9200
 12140  read oi,ol,m,n,oj$,od$,oe,ou,oa,od,os
 12145  if oi=0 then 12170
@@ -533,9 +544,10 @@
 12512 window1,1,38,23
 12515 restore 21000:i=0:a$=""
 12520 read t$: if t$="_" then 12900
-12525 cursor0,i:color12:printt$:if a$="" then sleep 0.4:gosub 20540
-12530 cursor0,i:color15:printt$:if a$="" then sleep 0.4:gosub 20540
-12535 cursor0,i:color1:printt$:if a$="" then sleep 0.8:gosub 20540
+12521 l=19-(int(len(t$))/2)
+12525 cursorl,i:color12:printt$:if a$="" then sleep 0.4:gosub 20540
+12530 cursorl,i:color15:printt$:if a$="" then sleep 0.4:gosub 20540
+12535 cursorl,i:color1:printt$:if a$="" then sleep 0.8:gosub 20540
 12540 if a$="" then get a$
 12542 i=i+1
 12545 ifi>23theni=23
