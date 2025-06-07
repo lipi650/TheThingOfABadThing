@@ -19,6 +19,7 @@
   146 dim vs&(18): rem view of side of cells
   148 dim vf&(18): rem view of front of cells
   149 dim at%(1): dim de%(1): dim st%(1): rem attack and defense initial and actual
+  150 dim qu%(10,1): rem quests
   161 lv=1:rem starting level
   162 restore6499+lv
   165 gosub9400:rem read level data
@@ -81,6 +82,7 @@
  1030 ifml%>0thengosub8200:rem combat
  1500 gosub 20700
  1510 if a$=chr$(145) and(vf&(11)<9 and vf&(11)<>0) then 1560
+ 1515 if a$=chr$(145) then yp=py:xp=px
  1520 if a$=chr$(145) and di=1 then py=py-1
  1530 if a$=chr$(145) and di=3 then py=py+1
  1540 if a$=chr$(145) and di=2 then px=px+1
@@ -312,13 +314,20 @@
  5078 data -3,-2,-3,-2
  5100 rem ------evaluate the special cells------
  5110 window 2,16,37,23:cursor 0,7
- 5111 if sp&(px,py)=0 then 5998 : rem border 0:rem not special
+ 5111 if sp&(px,py)=0 then scnclr:goto 5998 :rem not special
  5112 rem border 7
- 5113 if mp$="map01"and px=8 and py=8 then print "someone has broke the lock of the   door. maybe we should check who's   inside."
- 5115 if mp$="map01" and px=13 and py=19 then gosub 7000:rem the camp
+ 5113 if lv=1 and px=8 and py=8 then print "someone has broke the lock of the   door. maybe we should check who's   inside."
+ 5115 if lv=1 and px=13 and py=19 then gosub 7000:rem the camp
  5120 if lv=1 and px<6 and py<9 then print"you feel dizzy.": di=int(rnd(0)*4)+1:gosub3000
  5130 if lv=1 and px=11and py=20then print"i cannot go back to the village till i find fintan.": py=19:sleep 1:gosub3000
  5135 if lv=1 and px=14 and py=15 then print"you see a dead body leaning to a tree. you hope that fintan didn't meet the same fate."
+ 5149 rem
+ 5150 if lv=1 and px=19 and py=8 and qu%(2,1)<2 then begin:print"you face the leader of the brigands."
+ 5152 window 2,16,37,23:cursor 0,7:restore 8003
+ 5154 readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$:gosub8200:return
+ 5155 if ms%<1 then qu%(2,1)=2:window2,16,37,23:print"the brigand leader surrenders."
+ 5158 bend
+ 5160 if esc=1 then return
  5998 window 0,0,39,24
  5999 return
  6000 window 17,3,37,14:scnclr
@@ -334,6 +343,14 @@
  6498 rem -----level data------
  6499 rem map,monster chance,monst.lvl.min,monst.lvl.max,px,py,di
  6500 data"map01","wilderness",7,1,2,13,19,4
+ 6599 rem -------quest data--------
+ 6600 data 1,"fintan","find fintan in the forest."
+ 6601 data 2,"the brigands","defeat the brigand leader."
+ 6602 data 3,"the goblins","defeat the goblin king."
+ 6603 data 4,"the witch","defeat the witch of the forest."
+ 6604 data 5,"sir iain the exiled","et some tobacco leaves for sir iain."
+ 6605 data 0,"",""
+ 6699 rem ----------------------
  6999 rem ----the camp----
  7000 window 2,16,37,23:cursor 0,7
  7005 edma 0,1152,$801fb80+1*$480,$51380
@@ -379,14 +396,13 @@
  7730 if a$=chr$(95) then 7610 :rem back
  7740 if a$="k" then 7030: rem character completed
  7750 goto 7720
- 7760 px=px-1:window 17,3,37,14:scnclr
+ 7760 di=2: px=12:window 17,3,37,14:scnclr
  7765 gosub 3000
  7766 gosub 6000
  7770 return: rem exit from camp
  7799 rem ----wandering monster----
  7800 window 2,16,37,23:cursor 0,7
- 7810 restore(7999+int(rnd(0)*3)+1)
- 7812 restore(7999+int(rnd(0)*3)+1)
+ 7812 restore(7999+int(rnd(0)*5)+1):rem adjust to nr of monster data
  7820 readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$
  7830 if ml%>mn-1 and ml%<mx+1 then return
  7900 goto 7812
@@ -394,10 +410,12 @@
  8000 data1,2,9,5,9,10,"wild boar",0,0,"tusks"
  8001 data2,1,7,5,5,5,"goblin",3,0,"sword"
  8002 data3,1,7,6,5,6,"wolf",0,0,"teeth"
+ 8003 data4,4,8,8,8,6,"brigand leader",0,0,"axe"
+ 8004 data5,4,7,7,8,6,"goblin king",0,0,"mace"
  8199 rem ---combat---
  8200 window 2,16,37,23:cursor0,7
  8205 edma 0,1152,$802fb80+mp%*$480,$51380
- 8210 print"you met a "mo$"."
+ 8210 print"a "mo$" attacks you.":es=0
  8212 print"do you want to {orng}f{wht}ight or {orng}r{wht}un away?"
  8220 gosub 20700
  8230 ifa$="r"then8250
@@ -405,12 +423,14 @@
  8240 goto8220
  8249 rem-----run-----
  8250 if(int(rnd(0)*12)+1+de%(1))<(int(rnd(0))*12+1+ma%)thenst%(1)=st%(1)-2:print"you run but the "mo$" wounds you with it's "ma$".":return
- 8260 print"you managed to run away.":gosub3000:return
+ 8260 print"you managed to run away."
+ 8262 px=xp:py=yp:es=1
+ 8266 border2:gosub1000:return
  8299 rem----player attack----
  8300 ifint(rnd(0)*12)+1+at%(1)>=int(rnd(0)*12)+1+md%then begin:ms%=ms%-2:print"you hit the "mo$:print" with your sword."ms%
  8305 bend:else begin:print"you try to hit the "mo$:print" with your sword but fail."ms%:bend
  8307 sleep(0.5)
- 8310 ifms%<1thenprint"the "mo$" dies.":sleep(0.50):goto8400
+ 8310 ifms%<1thenprint"you defeated the "mo$".":sleep(0.50):goto8400
  8319 rem----monster attack----
  8320 ifint(rnd(0)*12)+1+de%(1)<int(rnd(0)*12)+1+ma%then begin:st%(1)=st%(1)-2:print"the "mo$" wounds you with it's "ma$"."
  8322 bend:else print"the "mo$" tries to wound you with it's "ma$",but fails."
@@ -445,7 +465,7 @@
  9030 gosub 20700
  9035 if a$="e" then screen close: goto 2005
  9040 screen close
- 9050 goto 150
+ 9050 goto 161
  9197 rem ------inventory objects data-------
  9198 rem equippables: 1weapon,2armor,3helmet,4amulet,6ring,7shield,8boots
  9199 rem id,location lvl,x,y,name,description,equippable,useable,at,de,st
@@ -479,11 +499,11 @@
  9344 next j
  9398 return
  9399 rem ----read level data----
- 9400 read mp$,md$,wm%,mn,mx,px,py,di
+ 9400 read mp$,md$,wm%,mn,mx,px,py,di:xp=px:yp=py
  9410 return
  9499 rem ----check if any objects are here----
  9500 restore 9200
- 9502 window2,16,37,23:scnclr:cursor 0,7:ob=0
+ 9502 window2,16,37,23:cursor 0,7:ob=0
  9510 do
  9520 read oi,ol,n,m,oj$,od$,oe,ou,oa,od,os
  9530 if ol=lv and ox(oi)=px and oy(oi)=py then print"here's: " oj$:ob=1
@@ -524,7 +544,7 @@
 12005 for j=0to9
 12007  if pi(j,1)=oe then pi(j,1)=0
 12008 nextj
-12010 pi(i,1)=oe: rem gosub 12110: rem recalculate bonuses
+12010 pi(i,1)=oe: gosub 12110: rem recalculate bonuses
 12099 a$="_":return
 12100 rem ----equipment bonuses----
 12110 at%(1)=at%(0):de%(1)=de%(0)
