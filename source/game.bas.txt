@@ -329,15 +329,16 @@
  5154  readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$:gosub8200:rem combat
  5155  if ms%<1 then qu%(2,1)=2:window2,16,37,23:cursor0,7:print"the brigand leader surrenders.":print" - please don't kill me!"
  5156  if ms%<1 then print"i promise we leave this forest.":sleep0.5:mx=2
- 5157 print"(press a key)":gosub20700
- 5158 if a$="" then 5162
- 5159  if ms%<1 then print"you ask him about fintan.":sleep0.5:print"i have'nt seen him."
- 5160  if ms%<1 then print"if he's lost then he might have wandered the cursed part of the woods north-west."
- 5161 print"(press a key)"
- 5162 gosub 20700
- 5163 if a$="" then 5162
- 5164  if ms%<1 then sleep0.5:print"i give you my magic ring, it will help you to find the way in the woods.":ml%=0:gosub9499
- 5165 bend
+ 5157 print"(press a key)"
+ 5158 gosub20700
+ 5159 if a$="" then 5162
+ 5160  if ms%<1 then print"you ask him about fintan.":sleep0.5:print"i have'nt seen him."
+ 5161  if ms%<1 then print"if he's lost then he might have wandered the cursed part of the woods north-west."
+ 5162 print"(press a key)"
+ 5163 gosub 20700
+ 5164 if a$="" then 5163
+ 5165  if ms%<1 then sleep0.5:print"i give you my magic ring, it will help you to find the way in the woods.":ml%=0:gosub9499
+ 5166 bend
  5998 window 0,0,39,24
  5999 return
  6000 window 17,3,37,14:scnclr
