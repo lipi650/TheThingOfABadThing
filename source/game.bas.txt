@@ -331,7 +331,7 @@
  5156  if ms%<1 then print"i promise we leave this forest.":sleep0.5:mx=2
  5157 print"(press a key)"
  5158 gosub20700
- 5159 if a$="" then 5162
+ 5159 if a$="" then 5158
  5160  if ms%<1 then print"you ask him about fintan.":sleep0.5:print"i have'nt seen him."
  5161  if ms%<1 then print"if he's lost then he might have wandered the cursed part of the woods north-west."
  5162 print"(press a key)"
