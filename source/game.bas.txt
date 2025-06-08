@@ -15,7 +15,7 @@
   140 dim sp&(20,20):rem special cells
   142 dim fr&(20,20):dim si&(20,20):rem fronts and sides of map cells
   144 dim ox(16): dim oy(16): rem object locations (with 16 objects defined)
-  145 dim pi%(10,1):rem player inventory
+  145 dim pi(10,1):rem player inventory
   146 dim vs&(18): rem view of side of cells
   148 dim vf&(18): rem view of front of cells
   149 dim at%(1): dim de%(1): dim st%(1): rem attack and defense initial and actual
@@ -176,8 +176,12 @@
  3242 window 0,0,39,24
  3244 cursor 8-(len(md$)/2),14: print md$
  3245 cursor 25,0:print "   {left}{left}{left}"px:cursor 28,0:print "    {left}{left}{left}"py
- 3247 rem
- 3250 rem
+ 3247 co%=6:gosub12240
+ 3248 if co%=6 and di=1 then t@&(7,0)=14
+ 3249 if co%=6 and di=2 then t@&(7,0)=5
+ 3250 if co%=6 and di=3 then t@&(7,0)=19
+ 3251 if co%=6 and di=4 then t@&(7,0)=23
+ 3252 if co%=6 then t@&(6,0)=32:t@&(8,0)=32:c@&(7,0)=8
  3255 edma 0,1152,fb,$51380 :rem clear background
  3260 if vs&(1)>0 then edma 0,96,fb+vs&(1)*sl,$51380 :goto 3265:rem col1
  3261 if vf&(2)>0 then edma 0,88,fb+vf&(2)*sl+1432,$51380: goto 3265 :rem col1
@@ -316,14 +320,15 @@
  5110 window 2,16,37,23:cursor 0,7
  5111 if sp&(px,py)=0 then scnclr:goto 5998 :rem not special
  5112 rem border 7
- 5113 if lv=1 and px=8 and py=8 then print "someone has broke the lock of the   door. maybe we should check who's   inside."
+ 5113 if lv=1 and px=8 and py=8 and qu%(2,1)=0 then print "someone has broke the lock of the   door. maybe we should check who's   inside."
  5115 if lv=1 and px=13 and py=19 then gosub 7000:rem the camp
  5120 if lv=1 and px<6 and py<9 then print"you feel dizzy.": di=int(rnd(0)*4)+1:gosub3000
  5130 if lv=1 and px=11and py=20then print"i cannot go back to the village till i find fintan.": py=19:sleep 1:gosub3000
  5135 if lv=1 and px=14 and py=15 then print"you see a dead body leaning to a tree. you hope that fintan didn't meet the same fate."
- 5149 rem
+ 5148 rem----------------------------
+ 5149 rem---special:brigand leader---
  5150 if lv=1 and px=19 and py=8 and qu%(2,1)=2 then return
- 5151 if lv=1 and px=19 and py=8 and qu%(2,1)<2 then begin
+ 5151 if lv=1 and px=19 and py=8 and qu%(2,1)=1 then begin
  5152 print"you face the leader of the brigands."
  5153  window 2,16,37,23:cursor 0,7:restore 8003
  5154  readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$:gosub8200:rem combat
@@ -339,6 +344,25 @@
  5164 if a$="" then 5163
  5165  if ms%<1 then sleep0.5:print"i give you my magic ring, it will help you to find the way in the woods.":ml%=0:gosub9499
  5166 bend
+ 5169 rem----------------------------
+ 5200 rem---------------------------
+ 5203 rem--special:old lady robbed--
+ 5206 if lv=1 and px=8  and py=7 and qu%(2,1)=1 then begin
+ 5207  window 2,16,37,23:cursor 0,7:print"the old lady greets you."
+ 5208  print"chase the rest of the brigands off, will you.":bend
+ 5209 if lv=1 and px=8  and py=7 and qu%(2,1)=0 then begin
+ 5212 print"you enter and see an old lady just  being attacked by a brigand."
+ 5215  window 2,16,37,23:cursor 0,7:restore 8005
+ 5218  readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$:gosub8200:rem combat
+ 5221  if ms%<1 then qu%(2,1)=1:window2,16,37,23:cursor0,7:print"you saved me...bless your heart!":print" - the lady says.":ml%=0
+ 5224  if ms%<1 then print"but the forest isn't safe yet.":sleep0.5
+ 5227 print"chase the rest of those brigands off, will you.":bend
+ 5230 if lv=1 and px=8  and py=7 and qu%(2,1)=2 then begin
+ 5233  window 2,16,37,23:cursor 0,7:print"the old lady greets you."
+ 5236  print"thank you for making the forest safer, dear."
+ 5239 rem
+ 5251 rem
+ 5254 bend
  5998 window 0,0,39,24
  5999 return
  6000 window 17,3,37,14:scnclr
@@ -486,7 +510,7 @@
  9203 data3,1,13, 9,"amulet","an amulet of an ancient god",4,0,0,1,0
  9204 data4,1,13, 9,"ash-baked scone","a scone baked in hearth ashes. your mother's gift for the road ahead",0,1,0,0,4
  9205 data5,1,14,15,"sword","a sword made of fine steel",1,0,2,0,0
- 9206 data6,1,0 , 0,"wayfinder ring","a magic ring that helps you to know your direction.",1,0,0,0,0
+ 9206 data6,1,0 , 0,"wayfinder ring","a magic ring that helps you to know your direction.",6,0,0,0,0
  9210 data0,0,0,0,"empty","",0,0,0,0,0:rem end of objects
  9298 rem -----------------------------------
  9299 rem ---take object-------
@@ -570,6 +594,22 @@
 12165 goto 12140
 12170 nexti
 12190 return
+12198 rem ---------check if player has an object--------------
+12199 rem --co=checked object, returns 0 if not in inventory--
+12200 i=0
+12205 if co%=pi(i,0) then return
+12210 i=i+1
+12215 if i<10 then 12205
+12220 co%=0: return
+12225 rem ----------------------------------------------------
+12230 rem -----check if player has an object equipped---------
+12235 rem --co=checked object, returns 0 if not equipped------
+12240 i=0
+12245 if co%=pi(i,0) and pi(i,1)>0 then return
+12250 i=i+1
+12255 if i<10 then 12245
+12260 co%=0: return
+12265 rem ----------------------------------------------------
 12499 rem -----intro------
 12500 for i=0to39:t@&(i,0)=78:c@&(i,0)=5:t@&(i,24)=78:c@&(i,24)=5:nexti
 12505 for i=0to24:t@&(0,i)=77:c@&(0,i)=5:t@&(39,i)=77:c@&(39,i)=5:nexti
