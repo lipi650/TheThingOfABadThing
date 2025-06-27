@@ -1,9 +1,8 @@
    10 rem to do:
-   20 rem inventory
    70 rem npcs
    80 rem quests
    90 rem victory
-  100 rem battle
+  100 rem -
   110 rem --------------------
   120 rem initialization
   121 mu=1:rem music on-off
@@ -51,7 +50,6 @@
   700 screen close 1:screen close 0 :scnclr:print"{wht}"
   702 if rwindow(2)=80 then print chr$(27)+"x": rem switch to 40 columns
   704 gosub 12500
-  705 if rwindow(2)=80 then print chr$(27)+"x": rem switch to 40 columns
   706 gosub 3710
   707 fb=$8000000 :rem here begins the attic ram
   708 sl=$810:fa=fb+sl
@@ -318,11 +316,11 @@
  5078 data -3,-2,-3,-2
  5100 rem ------evaluate the special cells------
  5110 window 2,16,37,23:cursor 0,7
- 5111 if sp&(px,py)=0 then scnclr:goto 5998 :rem not special
+ 5111 if sp&(px,py)=0 then print"":goto 5998 :rem not special
  5112 rem border 7
  5113 if lv=1 and px=8 and py=8 and qu%(2,1)=0 then print "someone has broke the lock of the   door. maybe we should check who's   inside."
  5115 if lv=1 and px=13 and py=19 then gosub 7000:rem the camp
- 5120 if lv=1 and px<6 and py<9 then print"you feel dizzy.": di=int(rnd(0)*4)+1:gosub3000
+ 5120 if lv=1 and px<6 and py<9 then print"you feel dizzy.": di=int(rnd(0)*4)+1:gosub3000:sleep 0.5:di=int(rnd(0)*4)+1:gosub3000
  5130 if lv=1 and px=11and py=20then print"i cannot go back to the village till i find fintan.": py=19:sleep 1:gosub3000
  5135 if lv=1 and px=14 and py=15 then print"you see a dead body leaning to a tree. you hope that fintan didn't meet the same fate."
  5148 rem----------------------------
@@ -342,8 +340,8 @@
  5162 print"(press a key)"
  5163 gosub 20700
  5164 if a$="" then 5163
- 5165  if ms%<1 then sleep0.5:print"i give you my magic ring, it will help you to find the way in the woods.":ml%=0:gosub9499
- 5166 bend
+ 5165  if ms%<1 then sleep0.5:print"i give you my magic ring, it will help you to find the way in the woods.":wm%=wm%-1:ml%=0:gosub9499:gosub6000
+ 5167 bend
  5169 rem----------------------------
  5200 rem---------------------------
  5203 rem--special:old lady robbed--
@@ -360,9 +358,30 @@
  5230 if lv=1 and px=8  and py=7 and qu%(2,1)=2 then begin
  5233  window 2,16,37,23:cursor 0,7:print"the old lady greets you."
  5236  print"thank you for making the forest safer, dear."
- 5239 rem
+ 5238 bend
+ 5239 rem----special:sir iain------
+ 5240 if lv=1 and px=19 and py=16 then begin
+ 5245 edma 0,1152,$801fb80+2*$480,$51380
+ 5246  window 2,16,37,23:cursor 0,7
+ 5247 ifqu(5,1)<1thenbeginprint"you met a knight.":print" -my name is sir iain. -he says.":print"you tell him about your lost uncle."
+ 5248 print" -i'm sorry but i haven't seen him. but if you could find me some pipeweed then i could teach you some survival tricks in exchange.":qu(5,1)=1:bend
+ 5249 ifqu(5,1)>0then begin
+ 5250 bend
  5251 rem
  5254 bend
+ 5299 bend:rem---end of sir iain scene---
+ 5301 rem--special:goblin leader  --
+ 5306 if lv=1 and px=3  and py=16and qu%(3,1)=0 then begin
+ 5307  window 2,16,37,23:cursor 0,7:print"you have found the lair of the goblin king."
+ 5315  window 2,16,37,23:cursor 0,7:restore 8004
+ 5318  readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$:gosub8200:rem combat
+ 5321  if ms%<1 then qu%(3,1)=2:window2,16,37,23:cursor0,7:print"with a final blow, the goblin king fell.":ml%=0:print"(press a key)"
+ 5322 gosub 20700
+ 5323 if a$=""then 5322
+ 5324 sleep1:print"the remaining goblins shriek in terror, scattering into the shadows."
+ 5325 sleep1:print"then with hurried chants and crashing stone, they collapsed their tunnel behind them.":wm%=wm%-1:mn=2:gosub9499:gosub6000
+ 5327 bend
+ 5900 return
  5998 window 0,0,39,24
  5999 return
  6000 window 17,3,37,14:scnclr
@@ -383,7 +402,7 @@
  6601 data 2,"the brigands","defeat the brigand leader."
  6602 data 3,"the goblins","defeat the goblin king."
  6603 data 4,"the witch","defeat the witch of the forest."
- 6604 data 5,"sir iain the exiled","et some tobacco leaves for sir iain."
+ 6604 data 5,"sir iain","get some tobacco leaves for sir iain."
  6605 data 0,"",""
  6699 rem ----------------------
  6999 rem ----the camp----
@@ -446,7 +465,7 @@
  8001 data2,1,7,5,5,5,"goblin",3,0,"sword"
  8002 data3,2,7,6,5,6,"wolf",0,0,"teeth"
  8003 data4,4,8,8,8,6,"brigand leader",0,6,"axe"
- 8004 data5,4,7,7,8,6,"goblin king",0,0,"mace"
+ 8004 data5,4,7,7,8,6,"goblin king",0,3,"mace"
  8005 data6,3,7,7,6,6,"brigand",0,0,"dagger"
  8199 rem ---combat---
  8200 window 2,16,37,23:cursor0,7
@@ -466,7 +485,7 @@
  8300 ifint(rnd(0)*12)+1+at%(1)>=int(rnd(0)*12)+1+md%then begin:ms%=ms%-2:print"you hit the "mo$:print" with your sword."ms%
  8305 bend:else begin:print"you try to hit the "mo$:print" with your sword but fail."ms%:bend
  8307 sleep(0.5)
- 8310 ifms%<1thenprint"you defeated the "mo$".":ox(mi%)=px:oy(mi%)=py:ol(mi%)=lv:sleep(0.50):goto8400
+ 8310 ifms%<1thenprint"you defeated the "mo$".":ox(mi%)=px:oy(mi%)=py:sleep(0.50):goto8400
  8319 rem----monster attack----
  8320 ifint(rnd(0)*12)+1+de%(1)<int(rnd(0)*12)+1+ma%then begin:st%(1)=st%(1)-2:print"the "mo$" wounds you with it's "ma$"."
  8322 bend:else print"the "mo$" tries to wound you with it's "ma$",but fails."
@@ -506,26 +525,28 @@
  9198 rem equippables: 1weapon,2armor,3helmet,4amulet,6ring,7shield,8boots
  9199 rem id,location lvl,x,y,name,description,equippable,useable,at,de,st
  9200 data1,1, 0, 0,"dirk","a narrow dagger with a keen edge",1,0,1,0,0
- 9201 data2,1, 0, 0,"pipeweed","dried tobacco leaves",0,0,0,0,0
- 9203 data3,1,13, 9,"amulet","an amulet of an ancient god",4,0,0,1,0
+ 9201 data2,1, 0, 0,"pipeweed","tobacco leaves",0,0,0,0,0
+ 9203 data3,1, 0, 0,"map","a map of the forest. shows a secret entrance north-west.",0,0,0,0,0
  9204 data4,1,13, 9,"ash-baked scone","a scone baked in hearth ashes. your mother's gift for the road ahead",0,1,0,0,4
  9205 data5,1,14,15,"sword","a sword made of fine steel",1,0,2,0,0
  9206 data6,1,0 , 0,"wayfinder ring","a magic ring that helps you to know your direction.",6,0,0,0,0
  9210 data0,0,0,0,"empty","",0,0,0,0,0:rem end of objects
  9298 rem -----------------------------------
  9299 rem ---take object-------
- 9300 window17,3,37,14:scnclr
- 9302 window2,16,37,23:scnclr
- 9305 restore 9200:do
+ 9300 window17,3,37,14: scnclr
+ 9302 window2,16,37,23:cursor0,7
+ 9305 restore 9200
  9310 read oi,ol,n,m,oj$,od$,oe,ou,oa,od,os
  9311 if oi=0 then return
  9312 if ox(oi)<>px and oy(oi)<>py then 9310
- 9315 if n=px and m=py then cursor0,7:print oj$": {orng}t{wht}ake / {orng}l{wht}eave":gosub20700
+ 9315 if ol=lv and ox(oi)=px and oy(oi)=py then print oj$": {orng}t{wht}ake / {orng}l{wht}eave"
+ 9317 gosub 20700
+ 9318 if a$="" then 9317
  9320 if a$="l"then print"ok.":sleep1:goto 9310
  9322 if a$="t"then begin
  9325  gosub 9340
  9326  if j=10 then print"you cannot carry more.":sleep 1:return
- 9327  pi(j,0)=oi:ox(oi)=0:oy(oi)=0:print"taken.":sleep1
+ 9327  pi(j,0)=oi:ox(oi)=0:oy(oi)=0:cursor0,7:print"taken.":sleep1
  9328 bend:
  9329 goto 9310
  9330 return
