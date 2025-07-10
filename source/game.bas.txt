@@ -1,6 +1,5 @@
    10 rem to do:
    70 rem npcs
-   80 rem quests
    90 rem victory
   100 rem -
   110 rem --------------------
@@ -18,7 +17,8 @@
   146 dim vs&(18): rem view of side of cells
   148 dim vf&(18): rem view of front of cells
   149 dim at%(1): dim de%(1): dim st%(1): rem attack and defense initial and actual
-  150 dim qu%(10,1): rem quests
+  150 dim qu%(10,1): qu%(1,1)=1: rem quests
+  152 fori=0to9:qu%(i,0)=i:next
   161 lv=1:rem starting level
   162 restore6499+lv
   165 gosub9400:rem read level data
@@ -96,6 +96,7 @@
  1650 if di=0 then di=4
  1660 if a$="e"thengosub2000: rem exit
  1670 if a$="i"thengosub8500
+ 1675 if a$="q"thengosub6700: rem quests
  1680 if a$="m"andmu=1thenmu=1-mu:play:goto1500
  1682 if a$="m"andmu=0thenmu=1-mu:gosub20430:goto1500
  1683 if a$="t"then gosub 9300
@@ -342,30 +343,45 @@
  5164 if a$="" then 5163
  5165  if ms%<1 then sleep0.5:print"i give you my magic ring, it will help you to find the way in the woods.":wm%=wm%-1:ml%=0:gosub9499:gosub6000
  5167 bend
- 5169 rem----------------------------
+ 5169 rem--special: secret entrance--
+ 5170 if lv=1 and px=2 and py=9 then begin
+ 5172  co%=3:gosub12200:rem check if player has map
+ 5174  if co%=3 then print"your map shows that there is a secret path to the north.":sleep1
+ 5176  ifco%=3thenfr&(2,8)=o:gosub3000
+ 5190 bend
  5200 rem---------------------------
  5203 rem--special:old lady robbed--
- 5206 if lv=1 and px=8  and py=7 and qu%(2,1)=1 then begin
- 5207  window 2,16,37,23:cursor 0,7:print"the old lady greets you."
- 5208  print"chase the rest of the brigands off, will you.":bend
- 5209 if lv=1 and px=8  and py=7 and qu%(2,1)=0 then begin
+ 5204 if lv=1 and px=8 and py=7 and qu%(2,1)=1 then begin
+ 5205 edma 0,1152,$801fb80+3*$480,$51380:window2,16,37,23:cursor0,7:print"the old lady greets you."
+ 5206  print"chase the rest of the brigands off, will you.":print"(press a key)"
+ 5207 gosub20700
+ 5208 if a$=""then 5207
+ 5209 py=py+1:gosub3000:bend
+ 5210 if lv=1 and px=8  and py=7 and qu%(2,1)=0 then begin
  5212 print"you enter and see an old lady just  being attacked by a brigand."
  5215  window 2,16,37,23:cursor 0,7:restore 8005
  5218  readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$:gosub8200:rem combat
  5221  if ms%<1 then qu%(2,1)=1:window2,16,37,23:cursor0,7:print"you saved me...bless your heart!":print" - the lady says.":ml%=0
  5224  if ms%<1 then print"but the forest isn't safe yet.":sleep0.5
- 5227 print"chase the rest of those brigands off, will you.":bend
+ 5225 print"chase the rest of those brigands off, will you."
+ 5227 gosub20700
+ 5228 if a$=""then 5227
+ 5229 py=py+1:gosub3000:bend
  5230 if lv=1 and px=8  and py=7 and qu%(2,1)=2 then begin
+ 5232  edma 0,1152,$801fb80+3*$480,$51380
  5233  window 2,16,37,23:cursor 0,7:print"the old lady greets you."
- 5236  print"thank you for making the forest safer, dear."
+ 5234  print"thank you for making the forest     safer, dear.":print"(press a key)"
+ 5235 gosub20700
+ 5236 if a$=""then 5235
+ 5237 py=py+1:gosub3000
  5238 bend
  5239 rem----special:sir iain------
  5240 if lv=1 and px=19 and py=16 then begin
  5245 edma 0,1152,$801fb80+2*$480,$51380
  5246  window 2,16,37,23:cursor 0,7
- 5247 ifqu(5,1)<1thenbeginprint"you met a knight.":print" -my name is sir iain. -he says.":print"you tell him about your lost uncle."
- 5248 print" -i'm sorry but i haven't seen him. but if you could find me some pipeweed then i could teach you some survival tricks in exchange.":qu(5,1)=1:bend
- 5249 ifqu(5,1)>0then begin
+ 5247 ifqu%(5,1)<1thenbeginprint"you met a knight.":print" -my name is sir iain. -he says.":print"you tell him about your lost uncle."
+ 5248 print" -i'm sorry but i haven't seen him. but if you could find me some pipeweed then i could teach you some survival tricks in exchange.":qu%(5,1)=1:bend
+ 5249 ifqu%(5,1)>0then begin
  5250 bend
  5251 rem
  5254 bend
@@ -404,7 +420,28 @@
  6603 data 4,"the witch","defeat the witch of the forest."
  6604 data 5,"sir iain","get some tobacco leaves for sir iain."
  6605 data 0,"",""
- 6699 rem ----------------------
+ 6699 rem -----quest log--------
+ 6700 window 17,3,37,14:scnclr:cursor0,0
+ 6710 n=0
+ 6720 restore 6600+n:read qi,qt$,qd$:rem quest id, title, description
+ 6730 if qi=0 then 6760
+ 6745 if qu%(qi,1)=1thenprint"{wht}";n;"{orng}";qt$
+ 6750 if qu%(qi,1)=2thenprint"{wht}";n;"{lgrn}";qt$
+ 6757 ifn<9thenn=n+1:goto6720
+ 6760 print"{orng}_"
+ 6765 gosub 20700
+ 6767 ifa$="_"then6998
+ 6768 rem --
+ 6770 m=val(a$):rem selected value from list
+ 6773 i=0:z=-1:window2,16,37,23
+ 6774 restore 6600
+ 6775 read qi,qt$,qd$
+ 6776 if qu%(qi,1)>0 then z=z+1
+ 6778 if qi=0 or z=m then 6782
+ 6780 goto 6775
+ 6782 scnclr:cursor0,7:color1:print qd$
+ 6788 goto6765
+ 6998 color1:return
  6999 rem ----the camp----
  7000 window 2,16,37,23:cursor 0,7
  7005 edma 0,1152,$801fb80+1*$480,$51380
@@ -412,17 +449,18 @@
  7020 window 17,3,37,14
  7030 scnclr
  7035 gosub 12110: rem calculate bonuses
- 7040 print"{orng}l{wht}oad game":print"{orng}c{wht}reate character"
+ 7040 print"{orng}n{wht}ew game":print"{orng}l{wht}oad game"
  7042 if len(na$)>0 then print"{orng}r{wht}est":print"{orng}s{wht}ave game":print"exit to {orng}w{wht}ilderness"
  7044 print"{orng}e{wht}xit game"
  7050 get a$
  7051 gosub 20700
- 7060 if a$="c" then gosub 7500: rem create character
+ 7060 if a$="n" then gosub 7500: rem create character
  7065 ifa$="e"thengosub2000
  7070 if len(na$)>0 and a$="w" then 7760
  7400 goto 7050
  7499 rem ---create character---
  7500 scnclr
+ 7505 qu%(0,1)=1
  7510 at%(0)=(rnd(0)*6)+7:at%(1)=at%(0)
  7520 de%(0)=(rnd(0)*6)+7:de%(1)=de%(0)
  7530 st%(0)=(rnd(0)*6)*2+12:st%(1)=st%(0)
@@ -525,7 +563,7 @@
  9198 rem equippables: 1weapon,2armor,3helmet,4amulet,6ring,7shield,8boots
  9199 rem id,location lvl,x,y,name,description,equippable,useable,at,de,st
  9200 data1,1, 0, 0,"dirk","a narrow dagger with a keen edge",1,0,1,0,0
- 9201 data2,1, 0, 0,"pipeweed","tobacco leaves",0,0,0,0,0
+ 9201 data2,1,16, 4,"pipeweed","tobacco leaves",0,0,0,0,0
  9203 data3,1, 0, 0,"map","a map of the forest. shows a secret entrance north-west.",0,0,0,0,0
  9204 data4,1,13, 9,"ash-baked scone","a scone baked in hearth ashes. your mother's gift for the road ahead",0,1,0,0,4
  9205 data5,1,14,15,"sword","a sword made of fine steel",1,0,2,0,0
@@ -593,7 +631,7 @@
 10999 rem ------ use object ------
 11000 if pi(i,0)=4 then begin:st%(1)=st%(1)+os:pi(i,0)=0
 11005  if st%(1)>st%(0) then st%(1)=st%(0)
-11010 window2,16,37,23:cursor0,7:print"each bite stirs the memory of the warmth of home."
+11010 window2,16,37,23:cursor0,7:print"each bite stirs the memory of the warmth of home.":print"(press a key)"
 11015 get a$:gosub20540
 11020 if a$="" then 11015:bend
 11998 a$="back":return
