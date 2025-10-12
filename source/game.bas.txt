@@ -361,6 +361,7 @@
  5212 print"you enter and see an old lady just  being attacked by a brigand."
  5215  window 2,16,37,23:cursor 0,7:restore 8005
  5218  readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$:gosub8200:rem combat
+ 5220 if ms%<1 then edma 0,1152,$801fb80+3*$480,$51380
  5221  if ms%<1 then qu%(2,1)=1:window2,16,37,23:cursor0,7:print"you saved me...bless your heart!":print" - the lady says.":ml%=0
  5224  if ms%<1 then print"but the forest isn't safe yet.":sleep0.5
  5225 print"chase the rest of those brigands off, will you."
@@ -397,6 +398,25 @@
  5324 sleep1:print"the remaining goblins shriek in terror, scattering into the shadows."
  5325 sleep1:print"then with hurried chants and crashing stone, they collapsed their tunnel behind them.":wm%=wm%-1:mn=2:gosub9499:gosub6000
  5327 bend
+ 5408 rem----------------------------
+ 5409 rem---special:the evil hag---
+ 5410 if lv=1 and px=6 and py=2 and qu%(1,1)=2 then return
+ 5411 if lv=1 and px=6 and py=2 and qu%(1,1)=1 then begin
+ 5412 print"you see a hag performing a ritual in front of an obelisk surronded by bones of dead animals and humans."
+ 5413  window 2,16,37,23:cursor 0,7:restore 8006
+ 5414  readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$:gosub8200:rem combat
+ 5415  if ms%<3 then qu%(2,1)=2:window2,16,37,23:cursor0,7:print"the hag snarls and raises her staff! dark smoke pours out, twisting around your neck!"
+ 5416  if ms%<3 then print"you gasp - it's choking you!"
+ 5417 print"(press a key)"
+ 5418 gosub 20700
+ 5419 if a$="" then 5418
+ 5420  if ms%<3 then print"the smoke tightens around your neck":print"you can't breath... your vision fades..."
+ 5421 print"(press a key)":gosub 20700
+ 5422 if a$="" then 5421
+ 5423  if ms%<1 then print"it shatters into pieces, and the dark smoke vanishes."
+ 5457 print"(press a key)"
+ 5458 gosub20700
+ 5460 bend
  5900 return
  5998 window 0,0,39,24
  5999 return
@@ -505,6 +525,7 @@
  8003 data4,4,8,8,8,6,"brigand leader",0,6,"axe"
  8004 data5,4,7,7,8,6,"goblin king",0,3,"mace"
  8005 data6,3,7,7,6,6,"brigand",0,0,"dagger"
+ 8006 data7,4,7,7,6,6,"evil hag",0,0,"staff"
  8199 rem ---combat---
  8200 window 2,16,37,23:cursor0,7
  8205 edma 0,1152,$802fb80+mp%*$480,$51380
