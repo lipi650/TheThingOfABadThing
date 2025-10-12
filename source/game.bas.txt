@@ -398,12 +398,16 @@
  5324 sleep1:print"the remaining goblins shriek in terror, scattering into the shadows."
  5325 sleep1:print"then with hurried chants and crashing stone, they collapsed their tunnel behind them.":wm%=wm%-1:mn=2:gosub9499:gosub6000
  5327 bend
- 5408 rem----------------------------
- 5409 rem---special:the evil hag---
- 5410 if lv=1 and px=6 and py=2 and qu%(1,1)=2 then return
- 5411 if lv=1 and px=6 and py=2 and qu%(1,1)=1 then begin
- 5412 print"you see a hag performing a ritual in front of an obelisk surronded by bones of dead animals and humans."
- 5413  window 2,16,37,23:cursor 0,7:restore 8006
+ 5400 rem----------------------------
+ 5401 rem---special:the evil hag---
+ 5402 if lv=1 and px=6 and py=2 and qu%(1,1)=2 then return
+ 5404 if lv=1 and px=6 and py=2 and qu%(1,1)=1 then begin
+ 5405 edma 0,1152,$802fb80+7*$480,$51380
+ 5406  window 2,16,37,23:cursor 0,7:restore 8006
+ 5407 print"you see a hag performing a ritual in front of an obelisk surronded by bones of dead animals and humans."
+ 5408 rem   print"(press a key)"
+ 5409 rem   gosub 20700
+ 5410 rem   if a$="" then 5409
  5414  readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$:gosub8200:rem combat
  5415  if ms%<3 then qu%(2,1)=2:window2,16,37,23:cursor0,7:print"the hag snarls and raises her staff! dark smoke pours out, twisting around your neck!"
  5416  if ms%<3 then print"you gasp - it's choking you!"
@@ -413,7 +417,10 @@
  5420  if ms%<3 then print"the smoke tightens around your neck":print"you can't breath... your vision fades..."
  5421 print"(press a key)":gosub 20700
  5422 if a$="" then 5421
- 5423  if ms%<1 then print"it shatters into pieces, and the dark smoke vanishes."
+ 5423  if ms%<1 then print"then - a flash of motion!":print"from the trees, a hatchet spins through the air, striking the hag's staff!"
+ 5425 print"(press a key)":gosub 20700
+ 5426 if a$="" then 5425
+ 5443  if ms%<1 then print"the staff shatters into pieces, and the dark smoke vanishes."
  5457 print"(press a key)"
  5458 gosub20700
  5460 bend
@@ -519,38 +526,43 @@
  7830 if ml%>mn-1 and ml%<mx+1 then return
  7900 goto 7812
  7999 rem --- monsters data --pic,lvl,att,def,str,xp,name,gold,items,attack
- 8000 data1,2,9,5,9,10,"wild boar",0,0,"tusks"
- 8001 data2,1,7,5,5,5,"goblin",3,0,"sword"
- 8002 data3,2,7,6,5,6,"wolf",0,0,"teeth"
- 8003 data4,4,8,8,8,6,"brigand leader",0,6,"axe"
- 8004 data5,4,7,7,8,6,"goblin king",0,3,"mace"
- 8005 data6,3,7,7,6,6,"brigand",0,0,"dagger"
- 8006 data7,4,7,7,6,6,"evil hag",0,0,"staff"
+ 8000 data1,2,9,5,9,10,"wild boar",0,0,"it's tusks"
+ 8001 data2,1,7,5,5,5,"goblin",3,0,"his sword"
+ 8002 data3,2,7,6,5,6,"wolf",0,0,"it's teeth"
+ 8003 data4,4,8,8,8,6,"brigand leader",0,6,"his axe"
+ 8004 data5,4,7,7,8,6,"goblin king",0,3,"his mace"
+ 8005 data6,3,7,7,6,6,"brigand",0,0,"his dagger"
+ 8006 data7,4,7,7,6,6,"evil hag",0,0,"her staff"
  8199 rem ---combat---
  8200 window 2,16,37,23:cursor0,7
  8205 edma 0,1152,$802fb80+mp%*$480,$51380
+ 8207 if mo$="evil hag" then 8300 :rem can't run from final boss fight
  8210 print"a "mo$" attacks you.":es=0
+ 8211 if mo$="evil hag" then 8300 :rem can't run from final boss fight
  8212 print"do you want to {orng}f{wht}ight or {orng}r{wht}un away?"
  8220 gosub 20700
  8230 ifa$="r"then8250
  8235 ifa$="f"then8300
  8240 goto8220
  8249 rem-----run-----
- 8250 if(int(rnd(0)*12)+1+de%(1))<(int(rnd(0))*12+1+ma%)thenst%(1)=st%(1)-2:print"you run but the "mo$" wounds you with it's "ma$".":return
+ 8250 if(int(rnd(0)*12)+1+de%(1))<(int(rnd(0))*12+1+ma%)thenst%(1)=st%(1)-2:print"you run but the "mo$" wounds you with "ma$".":return
  8260 print"you managed to run away."
  8262 px=xp:py=yp:es=1
  8266 gosub1000:return
  8299 rem----player attack----
- 8300 ifint(rnd(0)*12)+1+at%(1)>=int(rnd(0)*12)+1+md%then begin:ms%=ms%-2:print"you hit the "mo$:print" with your sword."ms%
+ 8300 if mo$="evil hag" then print"(press a key.)"
+ 8301 if mo$="evil hag" then gosub 20700
+ 8302 if mo$="evil hag" and a$="" then 8301
+ 8304 ifint(rnd(0)*12)+1+at%(1)>=int(rnd(0)*12)+1+md%then begin:ms%=ms%-2:print"you hit the "mo$:print" with your sword."ms%
  8305 bend:else begin:print"you try to hit the "mo$:print" with your sword but fail."ms%:bend
  8307 sleep(0.5)
  8310 ifms%<1thenprint"you defeated the "mo$".":ox(mi%)=px:oy(mi%)=py:sleep(0.50):goto8400
  8319 rem----monster attack----
- 8320 ifint(rnd(0)*12)+1+de%(1)<int(rnd(0)*12)+1+ma%then begin:st%(1)=st%(1)-2:print"the "mo$" wounds you with it's "ma$"."
- 8322 bend:else print"the "mo$" tries to wound you with it's "ma$",but fails."
+ 8320 ifint(rnd(0)*12)+1+de%(1)<int(rnd(0)*12)+1+ma%then begin:st%(1)=st%(1)-2:print"the "mo$" wounds you with "ma$"."
+ 8322 bend:else print"the "mo$" tries to wound you with "ma$",but fails."
  8324 sleep(0.5)
  8330 gosub6000:window2,16,37,23:cursor0,7
- 8335 ifms%>0orst%(1)>0then8212
+ 8335 ifms%>0orst%(1)>0then8211
  8340 ifst%(1)<1thenprint"you've been killed by a "mo$"."
  8400 gosub3000:return
  8499 rem -----inventory-----
