@@ -75,6 +75,7 @@
  1004 gosub9500: rem check objects here
  1005 gosub 6000:rem print player stats
  1010 gosub 5110: rem check special cells
+ 1012 if qu%(1,1)=2 then goto 22000
  1020 if int(rnd(0)*100)+1<wm% then gosub 7800:rem wandering monster
  1025 ifst%(1)<1 then gosub 20700:goto 9000
  1030 ifml%>0thengosub8200:rem combat
@@ -405,11 +406,9 @@
  5405 edma 0,1152,$802fb80+7*$480,$51380
  5406  window 2,16,37,23:cursor 0,7:restore 8006
  5407 print"you see a hag performing a ritual in front of an obelisk surronded by bones of dead animals and humans."
- 5408 rem   print"(press a key)"
- 5409 rem   gosub 20700
- 5410 rem   if a$="" then 5409
- 5414  readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$:gosub8200:rem combat
- 5415  if ms%<3 then qu%(2,1)=2:window2,16,37,23:cursor0,7:print"the hag snarls and raises her staff! dark smoke pours out, twisting around your neck!"
+ 5408  readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$:gosub8200:rem combat
+ 5409 if ms%<3 then edma 0,1152,$802fb80+7*$480,$51380
+ 5415  if ms%<3 then qu%(2,1)=2:window2,16,37,23:cursor0,7:print"{up}the hag snarls and raises her staff! dark smoke pours out, twisting around your neck!"
  5416  if ms%<3 then print"you gasp - it's choking you!"
  5417 print"(press a key)"
  5418 gosub 20700
@@ -423,7 +422,16 @@
  5443  if ms%<1 then print"the staff shatters into pieces, and the dark smoke vanishes."
  5457 print"(press a key)"
  5458 gosub20700
- 5460 bend
+ 5459 if a$="" then 5458
+ 5460  if ms%<1 then print"the hag screams as her staff falls on the ground.":print"you seize the moment..."
+ 5462 print"(press a key)"
+ 5464 gosub20700
+ 5465 if a$="" then 5464
+ 5468  if ms%<1 then print"with one final strike, you drive your blade through her heart!":print"the hag falls...her curse ends with her last breath.":qu%(1,1)=2
+ 5470 print"(press a key)"
+ 5472 gosub20700
+ 5473 if a$="" then 5472
+ 5660 bend
  5900 return
  5998 window 0,0,39,24
  5999 return
@@ -814,3 +822,9 @@
 21105 data"you say farewell and step into"
 21110 data"the forest of peril."
 21115 data"_"
+21199 rem ------ victory -------
+22000 window 1,1,38,23:scnclr
+22500 print"press any key."
+22502 gosub 20700
+22504 if a$="" then 22502
+22506 rem redirect to exit from here
