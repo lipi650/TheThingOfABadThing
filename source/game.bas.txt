@@ -824,7 +824,46 @@
 21115 data"_"
 21199 rem ------ victory -------
 22000 window 1,1,38,23:scnclr
-22500 print"press any key."
-22502 gosub 20700
-22504 if a$="" then 22502
-22506 rem redirect to exit from here
+22515 restore 24000:i=0:a$=""
+22520 read t$: if t$="_" then 22900
+22521 l=19-(int(len(t$))/2)
+22525 cursorl,i:color12:printt$:if a$="" then sleep 0.4:gosub 20540
+22530 cursorl,i:color15:printt$:if a$="" then sleep 0.4:gosub 20540
+22535 cursorl,i:color1:printt$:if a$="" then sleep 0.8:gosub 20540
+22540 if a$="" then get a$
+22542 i=i+1
+22545 ifi>23theni=23
+22547 goto 22520
+22900 sleep0.5
+22901 gosub 20540
+22902 get a$
+22903 if a$="" then 22901
+22905 rem scnclr:window0,0,39,24
+23500 rem print"press any key."
+23502 gosub 20700
+23504 if a$="" then 23502
+23506 goto 2005:rem exit
+23999 rem -------- victory screen text-------
+24000 data"the hag lies dead."
+24005 data"her dark curse broken."
+24010 data""
+24015 data"the air grows clear,"
+24020 data"the trees breath once more."
+24025 data"light returns to the forest."
+24030 data""
+24035 data"from the undergrowth, steps a man"
+24040 data"fintan, tired and mud stained."
+24045 data"he picks up his hatchet,"
+24050 data"still lying on the ground."
+24055 data""
+24060 data"so you found me - he says softly."
+24065 data"i was lost in this cursed wood"
+24070 data"for days..."
+24073 data""
+24075 data"he smiles wearily. -come on lad-"
+24080 data"let's go home."
+24081 data""
+24082 data""
+24083 data""
+24084 data"the end."
+24085 data"_"
