@@ -1,8 +1,10 @@
    10 rem to do:
-   70 rem npcs
-   90 rem victory
+   20 rem fix quest log
+   30 rem fix sir iain press key part.
+   70 rem
   100 rem -
   110 rem --------------------
+  115 gosub 25000:rem disclaimer
   120 rem initialization
   121 mu=1:rem music on-off
   122 gosub 20000:rem init music
@@ -74,10 +76,13 @@
  1002 ml%=0
  1004 gosub9500: rem check objects here
  1005 gosub 6000:rem print player stats
- 1010 gosub 5110: rem check special cells
- 1012 if qu%(1,1)=2 then goto 22000
+ 1010 gosub 5110:rem check special cells
+ 1011 ifst%(1)<1 then gosub 20700:goto 9000
+ 1012 if es=1 then es=0:goto 1900
+ 1018 if qu%(1,1)=2 then goto 22000
  1020 if int(rnd(0)*100)+1<wm% then gosub 7800:rem wandering monster
  1025 ifst%(1)<1 then gosub 20700:goto 9000
+ 1026 if es=1 then es=0:goto 1900
  1030 ifml%>0thengosub8200:rem combat
  1500 gosub 20700
  1510 if a$=chr$(145) and(vf&(11)<9 and vf&(11)<>0) then 1560
@@ -175,7 +180,7 @@
  3240 cm=gr&(cx,cy)
  3242 window 0,0,39,24
  3244 cursor 8-(len(md$)/2),14: print md$
- 3245 cursor 25,0:print "   {left}{left}{left}"px:cursor 28,0:print "    {left}{left}{left}"py
+ 3245 rem cursor 25,0:print "   {left}{left}{left}"px:cursor 28,0:print "    {left}{left}{left}"py
  3247 co%=6:gosub12240
  3248 if co%=6 and di=1 then t@&(7,0)=14
  3249 if co%=6 and di=2 then t@&(7,0)=5
@@ -332,17 +337,18 @@
  5152 print"you face the leader of the brigands."
  5153  window 2,16,37,23:cursor 0,7:restore 8003
  5154  readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$:gosub8200:rem combat
- 5155  if ms%<1 then qu%(2,1)=2:window2,16,37,23:cursor0,7:print"the brigand leader surrenders.":print" - please don't kill me!"
- 5156  if ms%<1 then print"i promise we leave this forest.":sleep0.5:mx=2
- 5157 print"(press a key)"
- 5158 gosub20700
- 5159 if a$="" then 5158
- 5160  if ms%<1 then print"you ask him about fintan.":sleep0.5:print"i have'nt seen him."
- 5161  if ms%<1 then print"if he's lost then he might have wandered the cursed part of the woods north-west."
- 5162 print"(press a key)"
- 5163 gosub 20700
- 5164 if a$="" then 5163
- 5165  if ms%<1 then sleep0.5:print"i give you my magic ring, it will help you to find the way in the woods.":wm%=wm%-1:ml%=0:gosub9499:gosub6000
+ 5155 if es=1 then 5167
+ 5156  if ms%<1 then qu%(2,1)=2:window2,16,37,23:cursor0,7:print"the brigand leader surrenders.":print" - please don't kill me!"
+ 5157  if ms%<1 then print"i promise we leave this forest.":sleep0.5:mx=2
+ 5158 print"(press a key)"
+ 5159 gosub20700
+ 5160 if a$="" then 5159
+ 5161  if ms%<1 then print"you ask him about fintan.":sleep0.5:print"i have'nt seen him."
+ 5162  if ms%<1 then print"if he's lost then he might have wandered the cursed part of the woods north-west."
+ 5163 print"(press a key)"
+ 5164 gosub 20700
+ 5165 if a$="" then 5164
+ 5166  if ms%<1 then sleep0.5:print"i give you my magic ring, it will help you to find the way in the woods.":wm%=wm%-1:ml%=0:gosub9499:gosub6000
  5167 bend
  5169 rem--special: secret entrance--
  5170 if lv=1 and px=2 and py=9 then begin
@@ -362,6 +368,7 @@
  5212 print"you enter and see an old lady just  being attacked by a brigand."
  5215  window 2,16,37,23:cursor 0,7:restore 8005
  5218  readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$:gosub8200:rem combat
+ 5219 if es=1 then 5238:rem escape from combat
  5220 if ms%<1 then edma 0,1152,$801fb80+3*$480,$51380
  5221  if ms%<1 then qu%(2,1)=1:window2,16,37,23:cursor0,7:print"you saved me...bless your heart!":print" - the lady says.":ml%=0
  5224  if ms%<1 then print"but the forest isn't safe yet.":sleep0.5
@@ -381,18 +388,37 @@
  5240 if lv=1 and px=19 and py=16 then begin
  5245 edma 0,1152,$801fb80+2*$480,$51380
  5246  window 2,16,37,23:cursor 0,7
- 5247 ifqu%(5,1)<1thenbeginprint"you met a knight.":print" -my name is sir iain. -he says.":print"you tell him about your lost uncle."
- 5248 print" -i'm sorry but i haven't seen him. but if you could find me some pipeweed then i could teach you some survival tricks in exchange.":qu%(5,1)=1:bend
- 5249 ifqu%(5,1)>0then begin
- 5250 bend
- 5251 rem
- 5254 bend
+ 5247 ifqu%(5,1)<1thenbeginprint"you met a knight.":print" -my name is sir iain. -he says.":print"you tell him about your lost uncle.":print"(press a key.)"
+ 5248 gosub 20700
+ 5249 if a$="" then 5248
+ 5253 print" -i'm sorry, i haven't seen him. but if you could find me some pipeweed then i could teach you some survival tricks in exchange.":qu%(5,1)=1
+ 5256 rem print"(press a key.)"
+ 5257 rem gosub 20700
+ 5258 rem if a$="" then 5257
+ 5259 bend
+ 5260 ifqu%(5,1)=1then begin
+ 5261 co%=2:gosub12200
+ 5263 if co%=2 then print"oh, you brought me my favorite pipeweed!":print"sir iain teaches you some fighting tricks.":at%(0)=at%(0)+1:de%(0)=de%(0)+1:qu%(5,1)=2
+ 5264 co%=2:gosub 12275:rem drop pipeweed
+ 5265 print"(press a key.)"
+ 5266 gosub 20700
+ 5267 if a$="" then 5266
+ 5270 if co%=0 then print"good luck in your quest! - sir iain says."
+ 5272 bend
+ 5280 ifqu%(5,1)=2then begin
+ 5281 print"you rest a bit at sir iain's camp then you say farewell.":bend
+ 5282 gosub 12110:rem recalculate bonuses
+ 5283 print"(press a key.)"
+ 5284 gosub 20700
+ 5285 if a$="" then 5284
+ 5298 px=px-1:gosub3000
  5299 bend:rem---end of sir iain scene---
  5301 rem--special:goblin leader  --
  5306 if lv=1 and px=3  and py=16and qu%(3,1)=0 then begin
  5307  window 2,16,37,23:cursor 0,7:print"you have found the lair of the goblin king."
  5315  window 2,16,37,23:cursor 0,7:restore 8004
  5318  readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$:gosub8200:rem combat
+ 5319 if es=1 then 5327: rem escaped from combat
  5321  if ms%<1 then qu%(3,1)=2:window2,16,37,23:cursor0,7:print"with a final blow, the goblin king fell.":ml%=0:print"(press a key)"
  5322 gosub 20700
  5323 if a$=""then 5322
@@ -436,9 +462,9 @@
  5998 window 0,0,39,24
  5999 return
  6000 window 17,3,37,14:scnclr
- 6010 cursor 0,0: print "G:   {left}{left}{left}" at%(1)
- 6020 cursor 0,1: print "{SHIFT-+}:   {left}{left}{left}" de%(1)
- 6030 cursor 0,2: print "S:   {left}{left}{left}" st%(1)
+ 6010 cursor 0,0: print "G:   {left}{left}{left}";at%(1)
+ 6020 cursor 0,1: print "{SHIFT-+}:   {left}{left}{left}";de%(1)
+ 6030 cursor 0,2: print "S:   {left}{left}{left}";st%(1)
  6040 cursor 0,4: print "{orng}i{wht}nventory"
  6050 cursor 0,5: print "{orng}q{wht}uest log"
  6055 if ob=1thenprint"{orng}t{wht}ake object"
@@ -451,31 +477,34 @@
  6599 rem -------quest data--------
  6600 data 1,"fintan","find fintan in the forest."
  6601 data 2,"the brigands","defeat the brigand leader."
- 6602 data 3,"the goblins","defeat the goblin king."
+ 6602 data 3,"the goblins","kill the goblin king."
  6603 data 4,"the witch","defeat the witch of the forest."
  6604 data 5,"sir iain","get some tobacco leaves for sir iain."
  6605 data 0,"",""
  6699 rem -----quest log--------
  6700 window 17,3,37,14:scnclr:cursor0,0
  6710 n=0
- 6720 restore 6600+n:read qi,qt$,qd$:rem quest id, title, description
+ 6715 restore 6600
+ 6720 read qi,qt$,qd$
  6730 if qi=0 then 6760
- 6745 if qu%(qi,1)=1thenprint"{wht}";n;"{orng}";qt$
- 6750 if qu%(qi,1)=2thenprint"{wht}";n;"{lgrn}";qt$
- 6757 ifn<9thenn=n+1:goto6720
- 6760 print"{orng}_"
+ 6740 if qu%(qi,1)=0 then 6757
+ 6745 if qu%(qi,1)=1 then print "{wht}";n;"{orng}";qt$
+ 6750 if qu%(qi,1)=2 then print "{wht}";n;"{lgrn}";qt$
+ 6755 n=n+1
+ 6757 goto 6720
+ 6760 print "{orng}_"
  6765 gosub 20700
- 6767 ifa$="_"then6998
+ 6767 if a$="_" then 6998
  6768 rem --
  6770 m=val(a$):rem selected value from list
- 6773 i=0:z=-1:window2,16,37,23
+ 6773 i=0:z=-1:window 2,16,37,23
  6774 restore 6600
  6775 read qi,qt$,qd$
- 6776 if qu%(qi,1)>0 then z=z+1
- 6778 if qi=0 or z=m then 6782
- 6780 goto 6775
- 6782 scnclr:cursor0,7:color1:print qd$
- 6788 goto6765
+ 6776 if qi=0 then 6788
+ 6777 if qu%(qi,1)>0 then z=z+1
+ 6778 if z=m then scnclr:cursor0,7:color1:print qd$:goto 6765
+ 6779 goto 6775
+ 6788 goto 6765
  6998 color1:return
  6999 rem ----the camp----
  7000 window 2,16,37,23:cursor 0,7
@@ -484,14 +513,18 @@
  7020 window 17,3,37,14
  7030 scnclr
  7035 gosub 12110: rem calculate bonuses
- 7040 print"{orng}n{wht}ew game":print"{orng}l{wht}oad game"
- 7042 if len(na$)>0 then print"{orng}r{wht}est":print"{orng}s{wht}ave game":print"exit to {orng}w{wht}ilderness"
+ 7040 print"{orng}n{wht}ew game":rem print"{orng}l{wht}oad game"
+ 7042 if len(na$)>0 then print"{orng}r{wht}est":print"exit to {orng}w{wht}ilderness"
  7044 print"{orng}e{wht}xit game"
  7050 get a$
  7051 gosub 20700
  7060 if a$="n" then gosub 7500: rem create character
  7065 ifa$="e"thengosub2000
  7070 if len(na$)>0 and a$="w" then 7760
+ 7080 if a$="r" then begin
+ 7082 window 2,16,37,23:cursor 0,7:print"you rest till the morning."
+ 7084 if st%(1)<st%(0) then st%(1)=st%(0)
+ 7090 bend
  7400 goto 7050
  7499 rem ---create character---
  7500 scnclr
@@ -499,9 +532,9 @@
  7510 at%(0)=(rnd(0)*6)+7:at%(1)=at%(0)
  7520 de%(0)=(rnd(0)*6)+7:de%(1)=de%(0)
  7530 st%(0)=(rnd(0)*6)*2+12:st%(1)=st%(0)
- 7540 print"attack  :"at%(0)
- 7550 print"defense :"de%(0)
- 7560 print"strength:"st%(0)
+ 7540 print"attack  :";at%(0)
+ 7550 print"defense :";de%(0)
+ 7560 print"strength:";st%(0)
  7570 print"{down}{down}{down}{orng}r{wht}e-roll":print"{orng}k{wht}eep":print"{orng}_{wht}back"
  7580 gosub 20700
  7582 if a$=chr$(95) then 7030:rem back
@@ -515,7 +548,7 @@
  7625 if a$=chr$(13)and len(na$)>0 then 7700:rem return
  7627 if a$=chr$(20) then na$=left$(na$,abs(len(na$)-1)):goto 7632:rem del
  7630 if len(na$)<16 and(asc(a$)>64 and asc(a$)<91) or asc(a$)=32 then na$=na$+a$:rem only letters accepted
- 7632 cursor0,4:print"                     ":print"{up}name:" na$
+ 7632 cursor0,4:print"                     ":print"{up}name:";na$
  7640 goto 7620
  7700 cursor 0,7:print"{orng}k{wht}eep"
  7710 print"{orng}_{wht}back"
@@ -529,7 +562,8 @@
  7770 return: rem exit from camp
  7799 rem ----wandering monster----
  7800 window 2,16,37,23:cursor 0,7
- 7812 restore(7999+int(rnd(0)*6)+1):rem adjust to nr of monster data
+ 7812 r=(7999+int(rnd(0)*6)+1):rem adjust to nr of monster data
+ 7813 restore r
  7820 readmp%,ml%,ma%,md%,ms%,me%,mo$,mg%,mi%,ma$
  7830 if ml%>mn-1 and ml%<mx+1 then return
  7900 goto 7812
@@ -542,36 +576,37 @@
  8005 data6,3,7,7,6,6,"brigand",0,0,"his dagger"
  8006 data7,4,7,7,6,6,"evil hag",0,0,"her staff"
  8199 rem ---combat---
- 8200 window 2,16,37,23:cursor0,7
+ 8200 rem window 17,6,37,14:scnclr
+ 8201 window 2,16,37,23:cursor0,7:es=0
  8205 edma 0,1152,$802fb80+mp%*$480,$51380
  8207 if mo$="evil hag" then 8300 :rem can't run from final boss fight
- 8210 print"a "mo$" attacks you.":es=0
+ 8210 print"a ";mo$;" attacks you.":es=0
  8211 if mo$="evil hag" then 8300 :rem can't run from final boss fight
  8212 print"do you want to {orng}f{wht}ight or {orng}r{wht}un away?"
  8220 gosub 20700
- 8230 ifa$="r"then8250
- 8235 ifa$="f"then8300
+ 8230 ifa$="f"then8300
+ 8235 ifa$="r"then8250
  8240 goto8220
  8249 rem-----run-----
- 8250 if(int(rnd(0)*12)+1+de%(1))<(int(rnd(0))*12+1+ma%)thenst%(1)=st%(1)-2:print"you run but the "mo$" wounds you with "ma$".":return
+ 8250 if(int(rnd(0)*12)+1+de%(1))<(int(rnd(0))*12+1+ma%)thenst%(1)=st%(1)-2:print"you run but the ";mo$;" wounds you with ";ma$;".":return
  8260 print"you managed to run away."
  8262 px=xp:py=yp:es=1
- 8266 gosub1000:return
+ 8266 gosub3000:return
  8299 rem----player attack----
  8300 if mo$="evil hag" then print"(press a key.)"
  8301 if mo$="evil hag" then gosub 20700
  8302 if mo$="evil hag" and a$="" then 8301
- 8304 ifint(rnd(0)*12)+1+at%(1)>=int(rnd(0)*12)+1+md%then begin:ms%=ms%-2:print"you hit the "mo$:print" with your sword."ms%
- 8305 bend:else begin:print"you try to hit the "mo$:print" with your sword but fail."ms%:bend
+ 8304 ifint(rnd(0)*12)+1+at%(1)>=int(rnd(0)*12)+1+md%then begin:ms%=ms%-2:print"you hit the ";mo$:print" with your sword."
+ 8305 bend:else begin:print"you try to hit the ";mo$:print" with your sword but fail.":bend
  8307 sleep(0.5)
- 8310 ifms%<1thenprint"you defeated the "mo$".":ox(mi%)=px:oy(mi%)=py:sleep(0.50):goto8400
+ 8310 ifms%<1thenprint"you defeated the ";mo$;".":ox(mi%)=px:oy(mi%)=py:sleep(0.50):goto8400
  8319 rem----monster attack----
- 8320 ifint(rnd(0)*12)+1+de%(1)<int(rnd(0)*12)+1+ma%then begin:st%(1)=st%(1)-2:print"the "mo$" wounds you with "ma$"."
- 8322 bend:else print"the "mo$" tries to wound you with "ma$",but fails."
+ 8320 ifint(rnd(0)*12)+1+de%(1)<int(rnd(0)*12)+1+ma%then begin:st%(1)=st%(1)-2:print"the ";mo$;" wounds you with ";ma$;"."
+ 8322 bend:else print"the ";mo$;" tries to wound you with ";ma$;",but fails."
  8324 sleep(0.5)
  8330 gosub6000:window2,16,37,23:cursor0,7
  8335 ifms%>0orst%(1)>0then8211
- 8340 ifst%(1)<1thenprint"you've been killed by a "mo$"."
+ 8340 ifst%(1)<1thenprint"you've been killed by a ";mo$;"."
  8400 gosub3000:return
  8499 rem -----inventory-----
  8500 window 17,3,37,14:scnclr
@@ -618,7 +653,7 @@
  9310 read oi,ol,n,m,oj$,od$,oe,ou,oa,od,os
  9311 if oi=0 then return
  9312 if ox(oi)<>px and oy(oi)<>py then 9310
- 9315 if ol=lv and ox(oi)=px and oy(oi)=py then print oj$": {orng}t{wht}ake / {orng}l{wht}eave"
+ 9315 if ol=lv and ox(oi)=px and oy(oi)=py then print oj$;": {orng}t{wht}ake / {orng}l{wht}eave"
  9317 gosub 20700
  9318 if a$="" then 9317
  9320 if a$="l"then print"ok.":sleep1:goto 9310
@@ -643,7 +678,7 @@
  9502 window2,16,37,23:cursor 0,7:ob=0
  9510 do
  9520 read oi,ol,n,m,oj$,od$,oe,ou,oa,od,os
- 9530 if ol=lv and ox(oi)=px and oy(oi)=py then print"here's: " oj$:ob=1
+ 9530 if ol=lv and ox(oi)=px and oy(oi)=py then print"here's: ";oj$:ob=1
  9689 loop until oi=0
  9690 return
  9699 rem--read object placements into arrays--
@@ -710,6 +745,13 @@
 12255 if i<10 then 12245
 12260 co%=0: return
 12265 rem ----------------------------------------------------
+12270 rem -------------drop object -co-----------
+12275 i=0
+12285 if co%=pi(i,0) then pi(i,0)=0:return
+12290 i=i+1
+12295 if i<10 then 12285
+12299 co%=0: return
+12300 rem ----------------------------------------------------
 12499 rem -----intro------
 12500 for i=0to39:t@&(i,0)=78:c@&(i,0)=5:t@&(i,24)=78:c@&(i,24)=5:nexti
 12505 for i=0to24:t@&(0,i)=77:c@&(0,i)=5:t@&(39,i)=77:c@&(39,i)=5:nexti
@@ -786,18 +828,24 @@
 20520 envelope 9 , 0 , 9 , 0 , 0
 20530 return
 20540 rem *** poll for playing of next song chunk
-20550 if rplay(1)ormu=0then return
+20545 if muu=0 then return:rem music disabled
+20550 r=rplay(1):rem r=0 means nothing is playing
+20555 if r<>0 then return:rem still playing current chink wait
 20560 t = m(tt) : rem musicandchunkandindex = mapandbarandtoandchunk(barandindex)
+20565 play v1$(t), v2$(t), v3$(t), v4$(t), v5$(t), v6$(t)
 20570 play v1$(t), v2$(t), v3$(t), v4$(t), v5$(t), v6$(t)
 20580 tt=tt+1
 20590 if m(tt) = -3 then tt = 0
 20600 return
 20700 rem *** getkey + poll music ***
+20705 a$="": rem key buffer (reuse)
 20710 do
 20720 gosub 20540
 20730 get a$
-20740 loop until a$ <>""
-20750 return
+20735 if a$<>""then return
+20740 sleep 0.02
+20750 loop
+20770 goto 20710
 20999 rem --------intro story data-----------------
 21000 data"you've lived your whole life in"
 21005 data"tirnabrae, a quiet village far from"
@@ -867,3 +915,14 @@
 24083 data""
 24084 data"the end."
 24085 data"_"
+25000 background 0:border 0:color1
+25005 scnclr: cursor 18,10
+25010 print"all characters in this game are fictional"
+25012 cursor 12,11
+25015 print"any reseblance to real people is purely coincidental."
+25017 cursor 30,14 :sleep 1.5
+25020 print"except sir iain."
+25022 cursor 33,15
+25025 print"he's real."
+25090 sleep 2
+25100 return
