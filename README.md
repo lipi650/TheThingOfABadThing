@@ -13,7 +13,7 @@ The project is not completed yet, it is in a WIP state.
   You can generate a character which has Strength, Attack and Defense attributes.
   The player can see the environment in a 12x12 "3D"-like first-person view, which is displayed using custom character graphics (144 characters which's values are copied from the Attic RAM when modified).
   The player can roam in a 20x20 map where he can meet monsters (probability and monster level is set by the variables associated with the actual level).
-  NPCs and quests need to be added in a later version.
+ Some NPCs and quests are added in the subroutine that handles "special" cells.
 
 ## The tools:
   ### IFFTOTILE:
